@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leanttro Auto-Peças | Premium Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #008f39;
+            --primary-dark: #006b2b;
+            --secondary: #003366;
+            --accent: #ffcc00;
+            --text-dark: #333;
+            --text-light: #777;
+            --bg-light: #f4f7f6;
+            --white: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 5px 15px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; transition: var(--transition); }
+        ul { list-style: none; }
+        img { max-width: 100%; display: block; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .btn { display: inline-block; padding: 12px 24px; border-radius: 4px; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; cursor: pointer; border: none; transition: var(--transition); text-align: center; }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-accent { background: var(--accent); color: var(--secondary); }
+
+        /* --- HEADER --- */
+        header { background: var(--white); border-bottom: 1px solid #eee; padding: 15px 0; }
+        .top-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+        
+        .logo-text { font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
+        .logo-text span { color: var(--secondary); }
+        
+        .search-main { flex: 1; max-width: 600px; position: relative; }
+        .search-main input { width: 100%; padding: 12px 50px 12px 20px; border: 1px solid #ddd; border-radius: 4px; outline: none; background: #f9f9f9; }
+        .search-main button { position: absolute; right: 0; top: 0; height: 100%; width: 50px; border: none; background: var(--primary); color: white; border-radius: 0 4px 4px 0; cursor: pointer; }
+
+        .header-actions { display: flex; gap: 25px; align-items: center; }
+        .action-item { display: flex; align-items: center; gap: 10px; color: var(--secondary); font-weight: 500; font-size: 0.9rem; }
+        .action-item i { font-size: 1.5rem; color: var(--primary); }
+        .cart-icon { position: relative; }
+        .badge { position: absolute; top: -8px; right: -8px; background: var(--accent); color: var(--secondary); font-size: 0.7rem; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* --- NAVIGATION --- */
+        .nav-section { background: var(--white); border-bottom: 1px solid #eee; }
+        .nav-menu ul { display: flex; justify-content: center; gap: 40px; padding: 15px 0; }
+        .nav-menu a { font-weight: 600; font-size: 0.9rem; color: var(--text-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-menu a:hover { color: var(--primary); }
+
+        /* --- VEHICLE FILTER --- */
+        .vehicle-filter { background: var(--secondary); padding: 25px 0; color: white; }
+        .filter-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .filter-title i { color: var(--accent); }
+        .filter-grid { display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 15px; align-items: flex-end; }
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-group label { font-size: 0.75rem; text-transform: uppercase; opacity: 0.8; font-weight: 600; }
+        .filter-group select { padding: 10px; border-radius: 4px; border: none; background: white; font-size: 0.9rem; outline: none; cursor: pointer; }
+        .filter-group select:disabled { background: #e0e0e0; cursor: not-allowed; color: #888; }
+        .btn-filter { background: var(--primary); color: white; height: 40px; padding: 0 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; cursor: pointer; transition: var(--transition); white-space: nowrap; }
+        .btn-filter:hover { background: var(--primary-dark); }
+
+        /* --- CATEGORIES CIRCULAR --- */
+        .categories-section { padding: 40px 0; background: var(--white); }
+        .cat-grid { display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
+        .cat-item { flex: 1; min-width: 100px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; cursor: pointer; }
+        .cat-circle { width: 85px; height: 85px; background: #f8f9fa; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; transition: var(--transition); overflow: hidden; }
+        .cat-circle i { font-size: 2rem; color: var(--secondary); }
+        .cat-item span { font-size: 0.8rem; font-weight: 700; color: var(--secondary); text-transform: uppercase; }
+        .cat-item:hover .cat-circle { background: var(--white); border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-5px); }
+        .cat-item:hover span { color: var(--primary); }
+
+        /* --- PRODUCTS --- */
+        .products-section { padding: 50px 0; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .section-header h2 { font-size: 1.5rem; color: var(--secondary); }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
+        
+        .product-card { background: white; padding: 20px; border-radius: var(--radius); border: 1px solid #eee; transition: var(--transition); display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); }
+        .product-img { height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; }
+        .product-img img { max-height: 100%; transition: 0.5s; object-fit: contain; }
+        .product-info h3 { font-size: 0.9rem; margin-bottom: 10px; height: 40px; overflow: hidden; line-height: 1.4; color: #555; }
+        .price-tag { font-size: 1.4rem; font-weight: 900; color: var(--secondary); margin-bottom: 15px; }
+        .price-tag small { font-size: 0.8rem; font-weight: 400; color: #999; }
+
+        /* --- BLOG CAROUSEL SECTION --- */
+        .blog-section { padding: 60px 0; background: #fff; position: relative; }
+        .carousel-wrapper { position: relative; overflow: hidden; margin-top: 30px; }
+        .blog-carousel { display: flex; gap: 25px; transition: transform 0.5s ease; scroll-behavior: smooth; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; }
+        .blog-carousel::-webkit-scrollbar { display: none; }
+        
+        .blog-card { min-width: 350px; background: var(--bg-light); border-radius: var(--radius); overflow: hidden; border: 1px solid #eee; transition: var(--transition); cursor: pointer; position: relative; }
+        .blog-card:hover { box-shadow: var(--shadow-md); transform: translateY(-5px); }
+        .blog-image { height: 200px; background-size: cover; background-position: center; position: relative; background-color: #ddd; }
+        .blog-category { position: absolute; top: 15px; left: 15px; background: var(--primary); color: white; padding: 5px 12px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; text-transform: uppercase; }
+        .blog-content { padding: 25px; }
+        .blog-date { font-size: 0.8rem; color: var(--text-light); margin-bottom: 10px; display: block; }
+        .blog-content h3 { font-size: 1.1rem; color: var(--secondary); margin-bottom: 15px; line-height: 1.4; }
+        .blog-content p { font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .read-more { color: var(--primary); font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+
+        .carousel-nav { position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between; pointer-events: none; transform: translateY(-50%); z-index: 10; padding: 0 10px; }
+        .nav-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--white); color: var(--secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; box-shadow: var(--shadow-md); border: none; font-size: 1.2rem; transition: var(--transition); }
+        .nav-btn:hover { background: var(--primary); color: white; }
+
+        /* --- MODAL --- */
+        .modal-overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; max-width: 800px; width: 100%; border-radius: var(--radius); padding: 40px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--secondary); }
+
+        /* --- FOOTER --- */
+        footer { background: var(--secondary); color: white; padding: 60px 0 20px; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
+        .footer-logo { font-size: 2rem; font-weight: 900; margin-bottom: 20px; display: block; }
+        .footer-col h4 { margin-bottom: 20px; text-transform: uppercase; font-size: 0.9rem; color: var(--accent); }
+        .footer-col li { margin-bottom: 10px; font-size: 0.9rem; opacity: 0.8; cursor: pointer; }
+        .footer-col li:hover { opacity: 1; color: var(--accent); }
+
+        @media (max-width: 992px) {
+            .filter-grid { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .blog-card { min-width: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <div class="top-header">
+                <a href="#" class="logo-text">LEANTTRO <span>AUTO-PEÇAS</span></a>
+                
+                <div class="search-main">
+                    <input type="text" placeholder="O que você está procurando hoje?">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="header-actions">
+                    <div class="action-item">
+                        <i class="far fa-user-circle"></i>
+                        <div><small>Olá, Visitante</small><br>Minha Conta</div>
+                    </div>
+                    <div class="action-item cart-icon">
+                        <i class="fas fa-shopping-basket"></i>
+                        <span class="badge" id="cart-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="nav-section">
+        <div class="container">
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="#">Início</a></li>
+                    <li><a href="#">Peças</a></li>
+                    <li><a href="#">Acessórios</a></li>
+                    <li><a href="#">Lubrificantes</a></li>
+                    <li><a href="#">Elétrica</a></li>
+                    <li><a href="#">Pneus</a></li>
+                    <li><a href="#">Contato</a></li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+
+    <section class="vehicle-filter">
+        <div class="container">
+            <div class="filter-title">
+                <i class="fas fa-car"></i> ENCONTRE PEÇAS PARA SEU VEÍCULO
+            </div>
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Marca</label>
+                    <select id="filter-marca" onchange="carregarModelos()">
+                        <option value="">Selecione a Marca</option>
+                        </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Modelo</label>
+                    <select id="filter-modelo" onchange="carregarVersoes()" disabled>
+                        <option value="">Selecione primeiro a Marca</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Versão / Ano</label>
+                    <select id="filter-versao" disabled>
+                        <option value="">Selecione primeiro o Modelo</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" style="justify-content: flex-end;">
+                     <div class="btn-filter" onclick="buscarPecasCompativeis()">
+                        BUSCAR AGORA
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="categories-section">
+        <div class="container">
+            <div class="cat-grid">
+                <div class="cat-item">
+                    <div class="cat-circle"><i class="fas fa-cogs"></i></div>
+                    <span>Motor</span>
+                </div>
+                <div class="cat-item">
+                    <div class="cat-circle"><i class="fas fa-oil-can"></i></div>
+                    <span>Óleos</span>
+                </div>
+                <div class="cat-item">
+                    <div class="cat-circle"><i class="fas fa-car-battery"></i></div>
+                    <span>Baterias</span>
+                </div>
+                <div class="cat-item">
+                    <div class="cat-circle"><i class="fas fa-tools"></i></div>
+                    <span>Suspensão</span>
+                </div>
+                <div class="cat-item">
+                    <div class="cat-circle"><i class="fas fa-lightbulb"></i></div>
+                    <span>Iluminação</span>
+                </div>
+                <div class="cat-item">
+                    <div class="cat-circle"><i class="fas fa-fan"></i></div>
+                    <span>Arrefecimento</span>
+                </div>
+                <div class="cat-item">
+                    <div class="cat-circle"><i class="fas fa-compact-disc"></i></div>
+                    <span>Freios</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="products-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Destaques da Semana</h2>
+                <a href="#" style="color: var(--primary); font-weight: bold;">Ver Todos →</a>
+            </div>
+            <div class="product-grid" id="product-container">
+                <p style="grid-column: 1/-1; text-align:center;">Carregando produtos...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="blog-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Dicas & Novidades</h2>
+                <p style="color: var(--text-light); margin-top: 5px;">Aprenda como cuidar melhor do seu veículo com o nosso blog</p>
+            </div>
+            
+            <div class="carousel-wrapper">
+                <div class="carousel-nav">
+                    <button class="nav-btn" onclick="scrollBlog(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <button class="nav-btn" onclick="scrollBlog(1)"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                
+                <div class="blog-carousel" id="blog-carousel">
+                    <p style="padding: 20px;">Carregando novidades...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="blog-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closePost()">&times;</span>
+            <div id="modal-body">
+                <h1 id="modal-title" style="margin-bottom: 15px;">Título</h1>
+                <div id="modal-text" style="line-height: 1.6; color: #444;"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <span class="footer-logo">LEANTTRO <span>AUTO</span></span>
+                    <p style="opacity: 0.7; line-height: 1.6;">A maior distribuidora de autopeças do país. Qualidade e confiança para o seu motor rodar sempre mais longe.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Categorias</h4>
+                    <ul>
+                        <li>Pneus e Rodas</li>
+                        <li>Escapamentos</li>
+                        <li>Transmissão</li>
+                        <li>Embreagem</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Atendimento</h4>
+                    <ul>
+                        <li>Minha Conta</li>
+                        <li>Meus Pedidos</li>
+                        <li>Rastreamento</li>
+                        <li>Devoluções</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contato</h4>
+                    <p>0800 123 4567</p>
+                    <p>ajuda@leanttroauto.com.br</p>
+                    <div style="margin-top: 20px; font-size: 1.5rem; display: flex; gap: 15px;">
+                        <i class="fab fa-instagram"></i>
+                        <i class="fab fa-facebook"></i>
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- CONFIGURAÇÕES ---
+        const API_URL = "https://api2.leanttro.com"; // Seu Directus
+        
+        // --- UTILITÁRIOS ---
+        
+        function getImageUrl(imageId) {
+            if (!imageId) return 'https://via.placeholder.com/300?text=Sem+Imagem';
+            return `${API_URL}/assets/${imageId}`;
+        }
+
+        function formatMoney(value) {
+            return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // --- 1. PRODUTOS ---
+
+        async function carregarProdutos(filtroVersaoId = null) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = '<p style="padding:20px; grid-column:1/-1; text-align:center;">Carregando estoque...</p>';
+
+            try {
+                let url = `${API_URL}/items/produtos?fields=*,imagem_destaque`;
+                
+                // Filtro Mágico de Compatibilidade
+                if (filtroVersaoId) {
+                    url += `&filter[veiculos_compativeis][veiculos_versoes_id][_eq]=${filtroVersaoId}`;
+                }
+
+                const response = await fetch(url);
+                const json = await response.json();
+                const produtos = json.data;
+
+                if (!produtos || produtos.length === 0) {
+                    container.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align:center; padding: 40px; background: #fff; border-radius: 8px;">
+                            <i class="fas fa-search" style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i>
+                            <h3>Nenhuma peça encontrada para este veículo.</h3>
+                            <p>Tente buscar outro modelo ou ver todos os produtos.</p>
+                            <button class="btn btn-primary" style="margin-top:15px" onclick="carregarProdutos()">Ver Tudo</button>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = produtos.map(p => `
+                    <div class="product-card">
+                        <div class="product-img">
+                            <img src="${getImageUrl(p.imagem_destaque)}" alt="${p.nome}">
+                        </div>
+                        <div class="product-info">
+                            <h3>${p.nome}</h3>
+                            <div class="price-tag">${formatMoney(p.preco)}</div>
+                            <button class="btn btn-primary" style="width: 100%" onclick="addToCart('${p.nome}')">ADICIONAR</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error("Erro ao buscar produtos:", error);
+                container.innerHTML = '<p>Erro ao carregar produtos. Verifique sua conexão.</p>';
+            }
+        }
+
+        // --- 2. FILTRO DE VEÍCULOS (Cascata) ---
+
+        async function carregarMarcas() {
+            try {
+                const response = await fetch(`${API_URL}/items/veiculos_marcas?sort=nome`);
+                const json = await response.json();
+                
+                const select = document.getElementById('filter-marca');
+                select.innerHTML = '<option value="">Selecione a Marca</option>' + 
+                    json.data.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function carregarModelos() {
+            const marcaId = document.getElementById('filter-marca').value;
+            const selectModelo = document.getElementById('filter-modelo');
+            const selectVersao = document.getElementById('filter-versao');
+            
+            // Reseta filhos
+            selectModelo.innerHTML = '<option>Carregando...</option>';
+            selectVersao.innerHTML = '<option>Aguarde o modelo...</option>';
+            selectVersao.disabled = true;
+
+            if (!marcaId) {
+                selectModelo.innerHTML = '<option value="">Selecione primeiro a Marca</option>';
+                selectModelo.disabled = true;
+                return;
+            }
+
+            const response = await fetch(`${API_URL}/items/veiculos_modelos?filter[marca_id][_eq]=${marcaId}&sort=nome`);
+            const json = await response.json();
+
+            selectModelo.innerHTML = '<option value="">Selecione o Modelo</option>' + 
+                json.data.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+            selectModelo.disabled = false;
+        }
+
+        async function carregarVersoes() {
+            const modeloId = document.getElementById('filter-modelo').value;
+            const selectVersao = document.getElementById('filter-versao');
+
+            if (!modeloId) {
+                selectVersao.disabled = true;
+                return;
+            }
+
+            const response = await fetch(`${API_URL}/items/veiculos_versoes?filter[modelo_id][_eq]=${modeloId}&sort=nome`);
+            const json = await response.json();
+
+            selectVersao.innerHTML = '<option value="">Selecione a Versão</option>' + 
+                json.data.map(v => `<option value="${v.id}">${v.nome} (${v.ano_inicio || ''}-${v.ano_fim || 'Atual'})</option>`).join('');
+            selectVersao.disabled = false;
+        }
+
+        function buscarPecasCompativeis() {
+            const versaoId = document.getElementById('filter-versao').value;
+            const btn = document.querySelector('.btn-filter');
+            
+            if (!versaoId) {
+                alert("Por favor, selecione até a versão do veículo para garantir a compatibilidade.");
+                return;
+            }
+
+            btn.innerText = "BUSCANDO...";
+            carregarProdutos(versaoId).then(() => {
+                btn.innerText = "FILTRO APLICADO ✅";
+                setTimeout(() => btn.innerText = "BUSCAR OUTRO", 2000);
+            });
+        }
+
+        // --- 3. BLOG ---
+
+        async function carregarBlog() {
+            const container = document.getElementById('blog-carousel');
+            
+            try {
+                const response = await fetch(`${API_URL}/items/posts?status=published&fields=*,capa`);
+                const json = await response.json();
+                
+                if (!json.data || json.data.length === 0) {
+                    container.innerHTML = '<p style="padding:20px">Em breve novidades aqui!</p>';
+                    return; 
+                }
+
+                container.innerHTML = json.data.map(post => `
+                    <div class="blog-card" onclick="openPost('${post.titulo.replace(/'/g, "\\'")}', '${post.conteudo ? post.conteudo.replace(/'/g, "\\'").replace(/\n/g, '<br>') : ''}')">
+                        <div class="blog-image" style="background-image: url('${getImageUrl(post.capa)}')">
+                            <span class="blog-category">${post.categoria || 'Dica'}</span>
+                        </div>
+                        <div class="blog-content">
+                            <span class="blog-date">Postado recentemente</span>
+                            <h3>${post.titulo}</h3>
+                            <p>${post.resumo || ''}</p>
+                            <span class="read-more">Ler Artigo <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (e) { console.error("Erro blog", e); }
+        }
+        
+        // --- INTERFACE GERAL ---
+
+        let cart = 0;
+        function addToCart(nomeProd) {
+            cart++;
+            document.getElementById('cart-count').innerText = cart;
+            alert(`"${nomeProd}" adicionado ao carrinho!`);
+        }
+
+        function openPost(titulo, conteudo) {
+            document.getElementById('modal-title').innerText = titulo;
+            document.getElementById('modal-text').innerHTML = conteudo;
+            document.getElementById('blog-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePost() {
+            document.getElementById('blog-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        function scrollBlog(direction) {
+            const carousel = document.getElementById('blog-carousel');
+            carousel.scrollBy({ left: direction * 350, behavior: 'smooth' });
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('blog-modal');
+            if (event.target == modal) closePost();
+        }
+
+        // --- INICIALIZAÇÃO ---
+        window.onload = () => {
+            carregarMarcas();
+            carregarProdutos();
+            carregarBlog();
+        };
+
+    </script>
+</body>
+</html>
