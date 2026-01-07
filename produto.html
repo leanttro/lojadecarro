@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Produto | Leanttro Auto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #008f39; --secondary: #003366; --bg-light: #f4f7f6; --radius: 8px; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg-light); margin: 0; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        
+        /* HEADER */
+        header { background: white; padding: 15px 0; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .logo { font-weight: 900; font-size: 1.5rem; color: var(--primary); text-decoration: none; }
+
+        /* LAYOUT PRODUTO */
+        .product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; background: white; padding: 40px; border-radius: var(--radius); }
+        .img-area img { width: 100%; border-radius: var(--radius); border: 1px solid #eee; }
+        
+        .info-area h1 { font-size: 1.8rem; margin-bottom: 10px; color: var(--secondary); }
+        .sku { color: #888; font-size: 0.9rem; margin-bottom: 20px; display: block; }
+        .price { font-size: 2rem; color: var(--primary); font-weight: 900; margin-bottom: 20px; display: block; }
+        .desc { line-height: 1.6; color: #555; margin-bottom: 30px; }
+        
+        .btn-add { background: var(--primary); color: white; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; border-radius: 4px; width: 100%; transition: 0.3s; }
+        .btn-add:hover { background: #006b2b; }
+
+        /* TABELA DE COMPATIBILIDADE */
+        .compatibility-box { margin-top: 30px; background: #f9f9f9; padding: 20px; border-radius: var(--radius); border: 1px solid #eee; }
+        .compatibility-box h3 { font-size: 1rem; margin-bottom: 15px; color: var(--secondary); border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .car-list { list-style: none; padding: 0; }
+        .car-list li { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+        .car-list li i { color: var(--primary); }
+
+        @media(max-width: 768px) { .product-detail { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
+            <a href="index.html" class="logo">LEANTTRO</a>
+            <a href="carrinho.html" style="text-decoration:none; color:var(--secondary); font-weight:bold;">
+                <i class="fas fa-shopping-basket"></i> <span id="cart-count">0</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="loading">Carregando detalhes da peça...</div>
+        
+        <div class="product-detail" id="content" style="display:none;">
+            <div class="img-area">
+                <img id="p-img" src="" alt="Produto">
+            </div>
+            <div class="info-area">
+                <h1 id="p-name">Nome do Produto</h1>
+                <span class="sku" id="p-sku">SKU: ---</span>
+                <span class="price" id="p-price">R$ 0,00</span>
+                
+                <p class="desc" id="p-desc">Descrição...</p>
+                
+                <button class="btn-add" onclick="addToCartCurrent()">
+                    ADICIONAR AO CARRINHO <i class="fas fa-cart-plus"></i>
+                </button>
+
+                <div class="compatibility-box">
+                    <h3><i class="fas fa-car"></i> Veículos Compatíveis</h3>
+                    <ul class="car-list" id="p-cars">
+                        <li>Sem informações de compatibilidade.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://api2.leanttro.com";
+        let currentProduct = null;
+
+        function getImageUrl(imageId) { return imageId ? `${API_URL}/assets/${imageId}` : 'https://via.placeholder.com/500'; }
+        function formatMoney(val) { return parseFloat(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+
+        async function loadProduct() {
+            // Pega o ID da URL (ex: produto.html?id=xyz)
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+
+            if (!id) {
+                document.getElementById('loading').innerText = "Produto não especificado.";
+                return;
+            }
+
+            try {
+                // Busca profunda: Traz produto + Tabela de Junção + Detalhes da Versão + Modelo
+                // O Directus usa ?fields=*.*.* para trazer 3 níveis de profundidade
+                const res = await fetch(`${API_URL}/items/produtos/${id}?fields=*,veiculos_compativeis.veiculos_versoes_id.nome,veiculos_compativeis.veiculos_versoes_id.modelo_id.nome,veiculos_compativeis.veiculos_versoes_id.ano_inicio`);
+                const json = await res.json();
+                const p = json.data;
+                currentProduct = p;
+
+                // Preenche a tela
+                document.getElementById('p-img').src = getImageUrl(p.imagem_destaque);
+                document.getElementById('p-name').innerText = p.nome;
+                document.getElementById('p-sku').innerText = `Cód: ${p.sku || 'N/A'} | Fab: ${p.codigo_fabricante || 'N/A'}`;
+                document.getElementById('p-price').innerText = formatMoney(p.preco);
+                document.getElementById('p-desc').innerText = p.descricao || "Sem descrição.";
+
+                // Lista de Carros (Lógica difícil simplificada)
+                if (p.veiculos_compativeis && p.veiculos_compativeis.length > 0) {
+                    const listHtml = p.veiculos_compativeis.map(item => {
+                        // O Directus retorna o objeto aninhado
+                        const v = item.veiculos_versoes_id; 
+                        const modelo = v.modelo_id ? v.modelo_id.nome : 'Modelo';
+                        return `<li><i class="fas fa-check-circle"></i> ${modelo} - ${v.nome} (A partir de ${v.ano_inicio})</li>`;
+                    }).join('');
+                    document.getElementById('p-cars').innerHTML = listHtml;
+                } else {
+                    document.getElementById('p-cars').innerHTML = "<li>Compatível com diversos veículos (consulte manual).</li>";
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'grid';
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('loading').innerText = "Erro ao carregar produto.";
+            }
+        }
+
+        function addToCartCurrent() {
+            if (!currentProduct) return;
+            
+            // Lógica do Carrinho no LocalStorage
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            
+            // Verifica se já existe
+            const existing = cart.find(x => x.id === currentProduct.id);
+            if (existing) {
+                existing.qtd += 1;
+            } else {
+                cart.push({
+                    id: currentProduct.id,
+                    nome: currentProduct.nome,
+                    preco: currentProduct.preco,
+                    img: currentProduct.imagem_destaque,
+                    qtd: 1
+                });
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            alert("Produto adicionado! Vamos para o carrinho?");
+            window.location.href = "carrinho.html";
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        window.onload = () => { loadProduct(); updateCartCount(); };
+    </script>
+</body>
+</html>

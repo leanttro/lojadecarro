@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Completo | Leanttro Auto-Peças</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS BASE (Mesmo do Index) */
+        :root { --primary: #008f39; --primary-dark: #006b2b; --secondary: #003366; --accent: #ffcc00; --text-dark: #333; --bg-light: #f4f7f6; --white: #ffffff; --radius: 8px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-light); color: var(--text-dark); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        img { max-width: 100%; display: block; }
+
+        /* HEADER & FOOTER SIMPLIFICADOS (Copie do index se quiser completo) */
+        header { background: white; padding: 15px 0; border-bottom: 1px solid #eee; margin-bottom: 30px; }
+        .logo { font-size: 1.5rem; font-weight: 900; color: var(--primary); text-decoration: none; }
+        
+        /* GRID DE PRODUTOS */
+        .catalog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; padding-bottom: 50px; }
+        .product-card { background: white; padding: 20px; border-radius: var(--radius); border: 1px solid #eee; transition: 0.3s; cursor: pointer; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .product-img { height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 15px; }
+        .product-img img { max-height: 100%; }
+        .price { font-size: 1.4rem; font-weight: 900; color: var(--secondary); display: block; margin-top: 10px; }
+        .btn-buy { background: var(--primary); color: white; border: none; width: 100%; padding: 10px; border-radius: 4px; margin-top: 10px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
+            <a href="index.html" class="logo">LEANTTRO <span>AUTO</span></a>
+            <a href="carrinho.html" style="text-decoration:none; color:var(--secondary); font-weight:bold;">
+                <i class="fas fa-shopping-basket"></i> Carrinho (<span id="cart-count">0</span>)
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="catalog-header">
+            <h1>Todas as Peças</h1>
+        </div>
+        <div class="product-grid" id="grid">
+            <p>Carregando catálogo...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://api2.leanttro.com";
+
+        // Funções Auxiliares
+        function getImageUrl(imageId) { return imageId ? `${API_URL}/assets/${imageId}` : 'https://via.placeholder.com/300'; }
+        function formatMoney(val) { return parseFloat(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        async function loadCatalog() {
+            try {
+                // Pega todos os produtos
+                const res = await fetch(`${API_URL}/items/produtos?status=published`);
+                const json = await res.json();
+                
+                document.getElementById('grid').innerHTML = json.data.map(p => `
+                    <div class="product-card" onclick="window.location.href='produto.html?id=${p.id}'">
+                        <div class="product-img">
+                            <img src="${getImageUrl(p.imagem_destaque)}" alt="${p.nome}">
+                        </div>
+                        <h3>${p.nome}</h3>
+                        <span class="price">${formatMoney(p.preco)}</span>
+                        <button class="btn-buy">VER DETALHES</button>
+                    </div>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        window.onload = () => { loadCatalog(); updateCartCount(); };
+    </script>
+</body>
+</html>

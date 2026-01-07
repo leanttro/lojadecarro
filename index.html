@@ -89,7 +89,7 @@
         
         .product-card { background: white; padding: 20px; border-radius: var(--radius); border: 1px solid #eee; transition: var(--transition); display: flex; flex-direction: column; }
         .product-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); }
-        .product-img { height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; }
+        .product-img { height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; cursor: pointer; }
         .product-img img { max-height: 100%; transition: 0.5s; object-fit: contain; }
         .product-info h3 { font-size: 0.9rem; margin-bottom: 10px; height: 40px; overflow: hidden; line-height: 1.4; color: #555; }
         .price-tag { font-size: 1.4rem; font-weight: 900; color: var(--secondary); margin-bottom: 15px; }
@@ -140,22 +140,22 @@
     <header>
         <div class="container">
             <div class="top-header">
-                <a href="#" class="logo-text">LEANTTRO <span>AUTO-PEÇAS</span></a>
+                <a href="index.html" class="logo-text">LEANTTRO <span>AUTO-PEÇAS</span></a>
                 
                 <div class="search-main">
                     <input type="text" placeholder="O que você está procurando hoje?">
-                    <button><i class="fas fa-search"></i></button>
+                    <button onclick="window.location.href='catalogo.html'"><i class="fas fa-search"></i></button>
                 </div>
 
                 <div class="header-actions">
-                    <div class="action-item">
+                    <a href="#" class="action-item">
                         <i class="far fa-user-circle"></i>
                         <div><small>Olá, Visitante</small><br>Minha Conta</div>
-                    </div>
-                    <div class="action-item cart-icon">
+                    </a>
+                    <a href="carrinho.html" class="action-item cart-icon">
                         <i class="fas fa-shopping-basket"></i>
                         <span class="badge" id="cart-count">0</span>
-                    </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -165,13 +165,13 @@
         <div class="container">
             <nav class="nav-menu">
                 <ul>
-                    <li><a href="#">Início</a></li>
-                    <li><a href="#">Peças</a></li>
-                    <li><a href="#">Acessórios</a></li>
-                    <li><a href="#">Lubrificantes</a></li>
-                    <li><a href="#">Elétrica</a></li>
-                    <li><a href="#">Pneus</a></li>
-                    <li><a href="#">Contato</a></li>
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="catalogo.html">Peças</a></li>
+                    <li><a href="catalogo.html">Acessórios</a></li>
+                    <li><a href="catalogo.html">Lubrificantes</a></li>
+                    <li><a href="catalogo.html">Elétrica</a></li>
+                    <li><a href="catalogo.html">Pneus</a></li>
+                    <li><a href="#footer">Contato</a></li>
                 </ul>
             </nav>
         </div>
@@ -187,7 +187,7 @@
                     <label>Marca</label>
                     <select id="filter-marca" onchange="carregarModelos()">
                         <option value="">Selecione a Marca</option>
-                        </select>
+                    </select>
                 </div>
                 
                 <div class="filter-group">
@@ -216,31 +216,31 @@
     <section class="categories-section">
         <div class="container">
             <div class="cat-grid">
-                <div class="cat-item">
+                <div class="cat-item" onclick="window.location.href='catalogo.html'">
                     <div class="cat-circle"><i class="fas fa-cogs"></i></div>
                     <span>Motor</span>
                 </div>
-                <div class="cat-item">
+                <div class="cat-item" onclick="window.location.href='catalogo.html'">
                     <div class="cat-circle"><i class="fas fa-oil-can"></i></div>
                     <span>Óleos</span>
                 </div>
-                <div class="cat-item">
+                <div class="cat-item" onclick="window.location.href='catalogo.html'">
                     <div class="cat-circle"><i class="fas fa-car-battery"></i></div>
                     <span>Baterias</span>
                 </div>
-                <div class="cat-item">
+                <div class="cat-item" onclick="window.location.href='catalogo.html'">
                     <div class="cat-circle"><i class="fas fa-tools"></i></div>
                     <span>Suspensão</span>
                 </div>
-                <div class="cat-item">
+                <div class="cat-item" onclick="window.location.href='catalogo.html'">
                     <div class="cat-circle"><i class="fas fa-lightbulb"></i></div>
                     <span>Iluminação</span>
                 </div>
-                <div class="cat-item">
+                <div class="cat-item" onclick="window.location.href='catalogo.html'">
                     <div class="cat-circle"><i class="fas fa-fan"></i></div>
                     <span>Arrefecimento</span>
                 </div>
-                <div class="cat-item">
+                <div class="cat-item" onclick="window.location.href='catalogo.html'">
                     <div class="cat-circle"><i class="fas fa-compact-disc"></i></div>
                     <span>Freios</span>
                 </div>
@@ -252,7 +252,7 @@
         <div class="container">
             <div class="section-header">
                 <h2>Destaques da Semana</h2>
-                <a href="#" style="color: var(--primary); font-weight: bold;">Ver Todos →</a>
+                <a href="catalogo.html" style="color: var(--primary); font-weight: bold;">Ver Todos →</a>
             </div>
             <div class="product-grid" id="product-container">
                 <p style="grid-column: 1/-1; text-align:center;">Carregando produtos...</p>
@@ -290,7 +290,7 @@
         </div>
     </div>
 
-    <footer>
+    <footer id="footer">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-col">
@@ -300,10 +300,10 @@
                 <div class="footer-col">
                     <h4>Categorias</h4>
                     <ul>
-                        <li>Pneus e Rodas</li>
-                        <li>Escapamentos</li>
-                        <li>Transmissão</li>
-                        <li>Embreagem</li>
+                        <li onclick="window.location.href='catalogo.html'">Pneus e Rodas</li>
+                        <li onclick="window.location.href='catalogo.html'">Escapamentos</li>
+                        <li onclick="window.location.href='catalogo.html'">Transmissão</li>
+                        <li onclick="window.location.href='catalogo.html'">Embreagem</li>
                     </ul>
                 </div>
                 <div class="footer-col">
@@ -331,10 +331,9 @@
 
     <script>
         // --- CONFIGURAÇÕES ---
-        const API_URL = "https://api2.leanttro.com"; // Seu Directus
+        const API_URL = "https://api2.leanttro.com";
         
         // --- UTILITÁRIOS ---
-        
         function getImageUrl(imageId) {
             if (!imageId) return 'https://via.placeholder.com/300?text=Sem+Imagem';
             return `${API_URL}/assets/${imageId}`;
@@ -344,16 +343,18 @@
             return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
-        // --- 1. PRODUTOS ---
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            document.getElementById('cart-count').innerText = cart.length;
+        }
 
+        // --- 1. PRODUTOS ---
         async function carregarProdutos(filtroVersaoId = null) {
             const container = document.getElementById('product-container');
             container.innerHTML = '<p style="padding:20px; grid-column:1/-1; text-align:center;">Carregando estoque...</p>';
 
             try {
                 let url = `${API_URL}/items/produtos?fields=*,imagem_destaque`;
-                
-                // Filtro Mágico de Compatibilidade
                 if (filtroVersaoId) {
                     url += `&filter[veiculos_compativeis][veiculos_versoes_id][_eq]=${filtroVersaoId}`;
                 }
@@ -367,40 +368,55 @@
                         <div style="grid-column: 1/-1; text-align:center; padding: 40px; background: #fff; border-radius: 8px;">
                             <i class="fas fa-search" style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i>
                             <h3>Nenhuma peça encontrada para este veículo.</h3>
-                            <p>Tente buscar outro modelo ou ver todos os produtos.</p>
-                            <button class="btn btn-primary" style="margin-top:15px" onclick="carregarProdutos()">Ver Tudo</button>
+                            <button class="btn btn-primary" style="margin-top:15px" onclick="window.location.href='catalogo.html'">Ver Tudo</button>
                         </div>`;
                     return;
                 }
 
                 container.innerHTML = produtos.map(p => `
                     <div class="product-card">
-                        <div class="product-img">
+                        <div class="product-img" onclick="window.location.href='produto.html?id=${p.id}'">
                             <img src="${getImageUrl(p.imagem_destaque)}" alt="${p.nome}">
                         </div>
                         <div class="product-info">
                             <h3>${p.nome}</h3>
                             <div class="price-tag">${formatMoney(p.preco)}</div>
-                            <button class="btn btn-primary" style="width: 100%" onclick="addToCart('${p.nome}')">ADICIONAR</button>
+                            <button class="btn btn-primary" style="width: 100%" 
+                                onclick="addToCart('${p.id}', '${p.nome.replace(/'/g, "\\'")}', ${p.preco}, '${p.imagem_destaque}')">
+                                ADICIONAR
+                            </button>
                         </div>
                     </div>
                 `).join('');
 
             } catch (error) {
-                console.error("Erro ao buscar produtos:", error);
-                container.innerHTML = '<p>Erro ao carregar produtos. Verifique sua conexão.</p>';
+                console.error(error);
+                container.innerHTML = '<p>Erro ao carregar produtos.</p>';
             }
         }
 
-        // --- 2. FILTRO DE VEÍCULOS (Cascata) ---
+        // --- FUNÇÃO CARRINHO (Agora salva no LocalStorage) ---
+        function addToCart(id, nome, preco, img) {
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            
+            const existing = cart.find(x => x.id === id);
+            if (existing) {
+                existing.qtd += 1;
+            } else {
+                cart.push({ id, nome, preco, img, qtd: 1 });
+            }
 
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            alert(`"${nome}" adicionado ao carrinho!`);
+        }
+
+        // --- 2. FILTRO DE VEÍCULOS ---
         async function carregarMarcas() {
             try {
                 const response = await fetch(`${API_URL}/items/veiculos_marcas?sort=nome`);
                 const json = await response.json();
-                
-                const select = document.getElementById('filter-marca');
-                select.innerHTML = '<option value="">Selecione a Marca</option>' + 
+                document.getElementById('filter-marca').innerHTML = '<option value="">Selecione a Marca</option>' + 
                     json.data.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
             } catch (e) { console.error(e); }
         }
@@ -410,20 +426,14 @@
             const selectModelo = document.getElementById('filter-modelo');
             const selectVersao = document.getElementById('filter-versao');
             
-            // Reseta filhos
             selectModelo.innerHTML = '<option>Carregando...</option>';
             selectVersao.innerHTML = '<option>Aguarde o modelo...</option>';
             selectVersao.disabled = true;
 
-            if (!marcaId) {
-                selectModelo.innerHTML = '<option value="">Selecione primeiro a Marca</option>';
-                selectModelo.disabled = true;
-                return;
-            }
+            if (!marcaId) return;
 
             const response = await fetch(`${API_URL}/items/veiculos_modelos?filter[marca_id][_eq]=${marcaId}&sort=nome`);
             const json = await response.json();
-
             selectModelo.innerHTML = '<option value="">Selecione o Modelo</option>' + 
                 json.data.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
             selectModelo.disabled = false;
@@ -433,14 +443,10 @@
             const modeloId = document.getElementById('filter-modelo').value;
             const selectVersao = document.getElementById('filter-versao');
 
-            if (!modeloId) {
-                selectVersao.disabled = true;
-                return;
-            }
+            if (!modeloId) return;
 
             const response = await fetch(`${API_URL}/items/veiculos_versoes?filter[modelo_id][_eq]=${modeloId}&sort=nome`);
             const json = await response.json();
-
             selectVersao.innerHTML = '<option value="">Selecione a Versão</option>' + 
                 json.data.map(v => `<option value="${v.id}">${v.nome} (${v.ano_inicio || ''}-${v.ano_fim || 'Atual'})</option>`).join('');
             selectVersao.disabled = false;
@@ -449,12 +455,10 @@
         function buscarPecasCompativeis() {
             const versaoId = document.getElementById('filter-versao').value;
             const btn = document.querySelector('.btn-filter');
-            
             if (!versaoId) {
-                alert("Por favor, selecione até a versão do veículo para garantir a compatibilidade.");
+                alert("Selecione até a versão para buscar.");
                 return;
             }
-
             btn.innerText = "BUSCANDO...";
             carregarProdutos(versaoId).then(() => {
                 btn.innerText = "FILTRO APLICADO ✅";
@@ -463,10 +467,8 @@
         }
 
         // --- 3. BLOG ---
-
         async function carregarBlog() {
             const container = document.getElementById('blog-carousel');
-            
             try {
                 const response = await fetch(`${API_URL}/items/posts?status=published&fields=*,capa`);
                 const json = await response.json();
@@ -489,19 +491,10 @@
                         </div>
                     </div>
                 `).join('');
-
             } catch (e) { console.error("Erro blog", e); }
         }
-        
-        // --- INTERFACE GERAL ---
 
-        let cart = 0;
-        function addToCart(nomeProd) {
-            cart++;
-            document.getElementById('cart-count').innerText = cart;
-            alert(`"${nomeProd}" adicionado ao carrinho!`);
-        }
-
+        // --- MODAIS E UTILITÁRIOS ---
         function openPost(titulo, conteudo) {
             document.getElementById('modal-title').innerText = titulo;
             document.getElementById('modal-text').innerHTML = conteudo;
@@ -526,11 +519,11 @@
 
         // --- INICIALIZAÇÃO ---
         window.onload = () => {
+            updateCartCount();
             carregarMarcas();
             carregarProdutos();
             carregarBlog();
         };
-
     </script>
 </body>
 </html>

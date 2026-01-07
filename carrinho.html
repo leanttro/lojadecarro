@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seu Carrinho | Leanttro Auto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #008f39; --secondary: #003366; --bg-light: #f4f7f6; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg-light); color: #333; margin:0; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        
+        h1 { color: var(--secondary); margin-bottom: 20px; }
+        
+        .cart-item { background: white; padding: 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .cart-item img { width: 60px; height: 60px; object-fit: contain; margin-right: 15px; }
+        .info { flex: 1; }
+        .info h4 { margin: 0 0 5px 0; font-size: 1rem; }
+        .qtd-control { display: flex; align-items: center; gap: 10px; }
+        .btn-small { background: #eee; border: none; width: 25px; height: 25px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .trash { color: red; cursor: pointer; margin-left: 20px; }
+
+        .total-box { background: white; padding: 20px; border-radius: 8px; text-align: right; margin-top: 20px; }
+        .total-val { font-size: 1.5rem; font-weight: 900; color: var(--primary); }
+        .btn-checkout { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; margin-top: 15px; }
+        
+        .empty-cart { text-align: center; padding: 50px; opacity: 0.6; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="index.html" style="text-decoration:none; color:#666;">&larr; Voltar para Loja</a>
+        <h1><i class="fas fa-shopping-cart"></i> Seu Carrinho</h1>
+        
+        <div id="cart-list">
+            </div>
+
+        <div class="total-box" id="total-box" style="display:none;">
+            <p>Subtotal: <span class="total-val" id="total-display">R$ 0,00</span></p>
+            <button class="btn-checkout" onclick="window.location.href='checkout.html'">FECHAR PEDIDO</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://api2.leanttro.com";
+        function getImageUrl(id) { return id ? `${API_URL}/assets/${id}` : ''; }
+        function formatMoney(val) { return parseFloat(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+
+        function renderCart() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const list = document.getElementById('cart-list');
+            
+            if (cart.length === 0) {
+                list.innerHTML = '<div class="empty-cart"><h2>Seu carrinho está vazio</h2><p>Adicione peças para começar.</p></div>';
+                document.getElementById('total-box').style.display = 'none';
+                return;
+            }
+
+            let total = 0;
+            list.innerHTML = cart.map((item, index) => {
+                total += item.preco * item.qtd;
+                return `
+                <div class="cart-item">
+                    <div style="display:flex; align-items:center;">
+                        <img src="${getImageUrl(item.img)}" alt="Foto">
+                        <div class="info">
+                            <h4>${item.nome}</h4>
+                            <span>${formatMoney(item.preco)}</span>
+                        </div>
+                    </div>
+                    <div class="qtd-control">
+                        <button class="btn-small" onclick="changeQtd(${index}, -1)">-</button>
+                        <span>${item.qtd}</span>
+                        <button class="btn-small" onclick="changeQtd(${index}, 1)">+</button>
+                        <i class="fas fa-trash trash" onclick="removeItem(${index})"></i>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('total-display').innerText = formatMoney(total);
+            document.getElementById('total-box').style.display = 'block';
+        }
+
+        function changeQtd(index, delta) {
+            let cart = JSON.parse(localStorage.getItem('cart'));
+            cart[index].qtd += delta;
+            if (cart[index].qtd <= 0) cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        function removeItem(index) {
+            let cart = JSON.parse(localStorage.getItem('cart'));
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        window.onload = renderCart;
+    </script>
+</body>
+</html>
