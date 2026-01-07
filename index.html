@@ -148,10 +148,11 @@
                 </div>
 
                 <div class="header-actions">
-                    <a href="#" class="action-item">
+                    <a href="conta.html" class="action-item">
                         <i class="far fa-user-circle"></i>
-                        <div><small>Olá, Visitante</small><br>Minha Conta</div>
+                        <div id="user-display"><small>Olá, Visitante</small><br>Minha Conta</div>
                     </a>
+                    
                     <a href="carrinho.html" class="action-item cart-icon">
                         <i class="fas fa-shopping-basket"></i>
                         <span class="badge" id="cart-count">0</span>
@@ -348,6 +349,15 @@
             document.getElementById('cart-count').innerText = cart.length;
         }
 
+        function checkLogin() {
+            const session = localStorage.getItem('user_session');
+            if (session) {
+                const user = JSON.parse(session);
+                const firstName = user.nome.split(' ')[0];
+                document.getElementById('user-display').innerHTML = `<small>Olá, ${firstName}</small><br>Minha Conta`;
+            }
+        }
+
         // --- 1. PRODUTOS ---
         async function carregarProdutos(filtroVersaoId = null) {
             const container = document.getElementById('product-container');
@@ -395,17 +405,15 @@
             }
         }
 
-        // --- FUNÇÃO CARRINHO (Agora salva no LocalStorage) ---
+        // --- FUNÇÃO CARRINHO ---
         function addToCart(id, nome, preco, img) {
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            
             const existing = cart.find(x => x.id === id);
             if (existing) {
                 existing.qtd += 1;
             } else {
                 cart.push({ id, nome, preco, img, qtd: 1 });
             }
-
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount();
             alert(`"${nome}" adicionado ao carrinho!`);
@@ -520,6 +528,7 @@
         // --- INICIALIZAÇÃO ---
         window.onload = () => {
             updateCartCount();
+            checkLogin(); // VERIFICA LOGIN
             carregarMarcas();
             carregarProdutos();
             carregarBlog();

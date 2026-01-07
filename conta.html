@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Conta | Leanttro Auto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #008f39; --secondary: #003366; --bg-light: #f4f7f6; --radius: 8px; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg-light); color: #333; margin: 0; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        
+        /* HEADER SIMPLES */
+        .simple-header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 1.8rem; font-weight: 900; color: var(--primary); text-decoration: none; }
+        .logo span { color: var(--secondary); }
+
+        /* CARD DE LOGIN */
+        .auth-card { background: white; padding: 40px; border-radius: var(--radius); box-shadow: 0 5px 20px rgba(0,0,0,0.05); max-width: 400px; margin: 0 auto; text-align: center; }
+        .auth-card h2 { color: var(--secondary); margin-bottom: 20px; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #555; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        .btn-action:hover { background: #006b2b; }
+
+        /* DASHBOARD (ESCONDIDO INICIALMENTE) */
+        .dashboard { display: none; }
+        .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .user-info h2 { color: var(--secondary); margin-bottom: 5px; }
+        .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+
+        /* LISTA DE PEDIDOS */
+        .order-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 20px; border-left: 5px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .order-card.status-pendente { border-left-color: #f1c40f; } /* Amarelo */
+        .order-card.status-pago { border-left-color: #3498db; }     /* Azul */
+        .order-card.status-enviado { border-left-color: #2ecc71; }  /* Verde */
+        .order-card.status-cancelado { border-left-color: #e74c3c; } /* Vermelho */
+
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .order-id { font-weight: bold; color: #555; }
+        .order-date { color: #888; font-size: 0.9rem; }
+        
+        .order-body { display: flex; justify-content: space-between; align-items: center; }
+        .order-total { font-size: 1.2rem; font-weight: 900; color: var(--secondary); }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; background: #eee; color: #555; }
+        
+        /* Cores dos Badges */
+        .bg-pendente { background: #fff3cd; color: #856404; }
+        .bg-enviado { background: #d4edda; color: #155724; }
+        .bg-pago { background: #cce5ff; color: #004085; }
+
+        .tracking-box { margin-top: 15px; background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+        .tracking-box i { color: var(--primary); }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="simple-header">
+            <a href="index.html" class="logo">LEANTTRO <span>AUTO-PEÇAS</span></a>
+        </div>
+
+        <div id="login-screen" class="auth-card">
+            <h2><i class="fas fa-user-lock"></i> Acessar Conta</h2>
+            <p style="margin-bottom:20px; color:#666;">Digite o e-mail utilizado na compra para ver seus pedidos.</p>
+            
+            <div class="input-group">
+                <label>Seu E-mail</label>
+                <input type="email" id="email-input" placeholder="exemplo@email.com">
+            </div>
+            
+            <button class="btn-action" onclick="fazerLogin()">ACESSAR</button>
+            <p id="msg-erro" style="color:red; margin-top:15px; font-size:0.9rem;"></p>
+        </div>
+
+        <div id="dashboard-screen" class="dashboard">
+            <div class="dash-header">
+                <div class="user-info">
+                    <h2 id="user-name">Olá, Cliente</h2>
+                    <p style="color:#777;">Aqui estão seus pedidos recentes.</p>
+                </div>
+                <button class="btn-logout" onclick="logout()">Sair</button>
+            </div>
+
+            <div id="orders-list">
+                <p>Carregando pedidos...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://api2.leanttro.com";
+
+        // Utilitários
+        function formatMoney(val) { return parseFloat(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // --- 1. LÓGICA DE LOGIN ---
+        async function fazerLogin() {
+            const email = document.getElementById('email-input').value.trim();
+            const msg = document.getElementById('msg-erro');
+            
+            if (!email) { msg.innerText = "Por favor, digite seu e-mail."; return; }
+            msg.innerText = "Verificando...";
+
+            try {
+                // Busca o cliente no banco pelo e-mail
+                const res = await fetch(`${API_URL}/items/clientes_loja?filter[email][_eq]=${email}`);
+                const json = await res.json();
+
+                if (json.data && json.data.length > 0) {
+                    // Cliente encontrado!
+                    const cliente = json.data[0];
+                    
+                    // Salva na "Sessão" (LocalStorage)
+                    localStorage.setItem('user_session', JSON.stringify(cliente));
+                    
+                    // Vai para o painel
+                    mostrarDashboard(cliente);
+                } else {
+                    msg.innerText = "E-mail não encontrado. Você já fez sua primeira compra?";
+                }
+
+            } catch (e) {
+                console.error(e);
+                msg.innerText = "Erro ao conectar. Tente novamente.";
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user_session');
+            location.reload();
+        }
+
+        // --- 2. LÓGICA DO DASHBOARD ---
+        function verificarSessao() {
+            const session = localStorage.getItem('user_session');
+            if (session) {
+                mostrarDashboard(JSON.parse(session));
+            }
+        }
+
+        async function mostrarDashboard(cliente) {
+            // Esconde login, mostra dashboard
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard-screen').style.display = 'block';
+            document.getElementById('user-name').innerText = `Olá, ${cliente.nome.split(' ')[0]}`;
+
+            // Busca os pedidos desse cliente
+            const listContainer = document.getElementById('orders-list');
+            listContainer.innerHTML = '<p>Buscando histórico...</p>';
+
+            try {
+                const res = await fetch(`${API_URL}/items/pedidos?filter[cliente_id][_eq]=${cliente.id}&sort=-date_created`);
+                const json = await res.json();
+                const pedidos = json.data;
+
+                if (pedidos.length === 0) {
+                    listContainer.innerHTML = '<div style="text-align:center; padding:30px; color:#777;">Você ainda não tem pedidos registrados.</div>';
+                    return;
+                }
+
+                listContainer.innerHTML = pedidos.map(p => {
+                    // Define cor e texto do status
+                    let statusClass = 'bg-pendente';
+                    let statusText = p.status;
+                    let trackingHtml = '';
+
+                    if (p.status === 'pago') { statusClass = 'bg-pago'; statusText = 'Pagamento Aprovado'; }
+                    if (p.status === 'enviado') { 
+                        statusClass = 'bg-enviado'; 
+                        statusText = 'Enviado / Em Trânsito';
+                        // Simulação de Rastreio (se o campo existisse no banco, usariamos ele)
+                        trackingHtml = `
+                            <div class="tracking-box">
+                                <i class="fas fa-truck"></i>
+                                <span>Rastreio: <b>LE${p.id.substring(0,4).toUpperCase()}BR</b> (Correios)</span>
+                                <a href="#" style="color:blue; margin-left:auto; font-size:0.8rem;">Acompanhar</a>
+                            </div>`;
+                    }
+                    if (p.status === 'cancelado') statusClass = 'bg-cancelado';
+
+                    return `
+                    <div class="order-card status-${p.status}">
+                        <div class="order-header">
+                            <span class="order-id">Pedido #${p.id.substring(0,8).toUpperCase()}</span>
+                            <span class="order-date">${formatDate(p.date_created)}</span>
+                        </div>
+                        <div class="order-body">
+                            <div>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="order-total">
+                                ${formatMoney(p.total)}
+                            </div>
+                        </div>
+                        ${trackingHtml}
+                    </div>
+                    `;
+                }).join('');
+
+            } catch (e) {
+                console.error(e);
+                listContainer.innerHTML = '<p>Erro ao carregar pedidos.</p>';
+            }
+        }
+
+        // Inicialização
+        window.onload = verificarSessao;
+    </script>
+</body>
+</html>
