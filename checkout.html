@@ -6,6 +6,8 @@
     <title>Finalizar Pedido | Leanttro Auto</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         body { font-family: 'Roboto', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
@@ -68,8 +70,12 @@
         <div class="summary">
             <h3>Resumo da Compra</h3>
             <div class="row">
-                <span>Itens no carrinho:</span>
-                <span id="item-count">0</span>
+                <span>Itens:</span>
+                <span id="items-val">R$ 0,00</span>
+            </div>
+            <div class="row">
+                <span>Frete <small id="frete-tipo"></small>:</span>
+                <span id="frete-val">Calculando...</span>
             </div>
             <div class="row total-row">
                 <span>Total a Pagar:</span>
@@ -79,13 +85,14 @@
 
         <button class="btn-pay" onclick="processarCheckout()" id="btn-submit">CONFIRMAR PEDIDO</button>
         <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: #777;">
-            <a href="index.html">Continuar comprando</a>
+            <a href="carrinho.html">Voltar para o carrinho</a>
         </p>
     </div>
 
     <script>
         const API_URL = "https://api2.leanttro.com";
         let cart = [];
+        let shippingInfo = { valor: 0, tipo: 'Padrão' };
         let currentUser = null;
 
         // --- 1. CRIPTOGRAFIA ---
@@ -94,37 +101,46 @@
             return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
+        function formatMoney(val) { return parseFloat(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+
         // --- 2. INICIALIZAÇÃO ---
         function init() {
             // Verifica Carrinho
             cart = JSON.parse(localStorage.getItem('cart') || '[]');
             if (cart.length === 0) {
-                alert("Seu carrinho está vazio!");
                 window.location.href = "index.html";
                 return;
             }
             
-            // Renderiza Totais
-            const total = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
-            document.getElementById('item-count').innerText = cart.length;
-            document.getElementById('total-val').innerText = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            // Carrega Frete calculado no Carrinho
+            const savedShipping = localStorage.getItem('shipping_info');
+            if (savedShipping) {
+                shippingInfo = JSON.parse(savedShipping);
+            }
+
+            // Calcula Totais
+            const itemsTotal = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+            const finalTotal = itemsTotal + shippingInfo.valor;
+
+            // Renderiza na tela
+            document.getElementById('items-val').innerText = formatMoney(itemsTotal);
+            document.getElementById('frete-val').innerText = shippingInfo.valor > 0 ? formatMoney(shippingInfo.valor) : 'Grátis/Não calculado';
+            document.getElementById('frete-tipo').innerText = shippingInfo.tipo ? `(${shippingInfo.tipo})` : '';
+            document.getElementById('total-val').innerText = formatMoney(finalTotal);
 
             // Verifica Login (Session)
             const session = localStorage.getItem('user_session');
             if (session) {
                 currentUser = JSON.parse(session);
-                
-                // Preenche formulário e trava campos
                 document.getElementById('nome').value = currentUser.nome;
                 document.getElementById('email').value = currentUser.email;
                 
-                // Se já tiver endereço salvo no JSON do usuário, poderia preencher aqui
-                // document.getElementById('endereco').value = currentUser.endereco_json?.rua || '';
+                // Se o usuário já tiver endereço salvo, usa ele
+                if (currentUser.endereco_json && currentUser.endereco_json.rua) {
+                    document.getElementById('endereco').value = currentUser.endereco_json.rua;
+                }
 
-                // Esconde campo de senha
                 document.getElementById('senha-group').style.display = 'none';
-                
-                // Mostra aviso
                 document.getElementById('login-alert').style.display = 'flex';
                 document.getElementById('user-name-display').innerText = currentUser.nome;
             }
@@ -139,15 +155,13 @@
             const senha = document.getElementById('senha').value;
             const metodoPagamento = document.getElementById('pagamento').value;
 
-            // Validação Básica
             if (!nome || !email || !endereco) {
-                alert("Por favor, preencha todos os campos obrigatórios.");
+                Swal.fire('Atenção', 'Preencha todos os campos obrigatórios.', 'warning');
                 return;
             }
 
-            // Se não estiver logado, EXIGE senha para criar conta
             if (!currentUser && !senha) {
-                alert("Defina uma senha para acompanhar seu pedido no painel.");
+                Swal.fire('Segurança', 'Defina uma senha para acompanhar seu pedido.', 'info');
                 return;
             }
 
@@ -161,7 +175,6 @@
                 if (currentUser) {
                     clienteId = currentUser.id;
                 } else {
-                    // Tenta Criar Novo Cliente
                     try {
                         const senhaHash = await hashPassword(senha);
                         
@@ -170,7 +183,7 @@
                             nome: nome,
                             email: email,
                             senha_hash: senhaHash,
-                            endereco_json: { rua: endereco } // Salva endereço no perfil tb
+                            endereco_json: { rua: endereco }
                         };
 
                         const resCliente = await fetch(`${API_URL}/items/clientes_loja`, {
@@ -182,44 +195,41 @@
                         const jsonCliente = await resCliente.json();
 
                         if (!resCliente.ok) {
-                            // Erro comum: Email já existe
                             if (jsonCliente.errors && jsonCliente.errors[0].code === 'RECORD_NOT_UNIQUE') {
-                                alert("Este e-mail já está cadastrado!\nPor favor, faça login no painel antes de comprar ou use outro e-mail.");
+                                Swal.fire('E-mail já existe', 'Faça login no painel para continuar.', 'error');
                                 btn.disabled = false;
-                                btn.innerText = "CONFIRMAR PEDIDO";
                                 return;
                             }
                             throw new Error("Erro ao criar cadastro.");
                         }
 
-                        // Sucesso na criação
                         clienteId = jsonCliente.data.id;
-                        
-                        // Salva sessão para o futuro
                         localStorage.setItem('user_session', JSON.stringify(jsonCliente.data));
 
                     } catch (errUser) {
                         console.error(errUser);
-                        alert("Erro ao cadastrar usuário. Verifique os dados.");
+                        Swal.fire('Erro', 'Não foi possível criar o cadastro.', 'error');
                         btn.disabled = false;
-                        btn.innerText = "CONFIRMAR PEDIDO";
                         return;
                     }
                 }
 
-                // PASSO B: Criar o Pedido Vinculado
-                const total = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+                // PASSO B: Criar o Pedido
+                const itemsTotal = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+                const finalTotal = itemsTotal + shippingInfo.valor;
                 
                 const pedidoPayload = {
                     status: "pendente",
-                    cliente_id: clienteId, // VINCULA AO CLIENTE
-                    total: total,
+                    cliente_id: clienteId,
+                    total: finalTotal, // ENVIA O TOTAL COM FRETE
                     metodo_pagamento: metodoPagamento,
+                    rastreio: shippingInfo.tipo || 'Padrão', // Salva o tipo de frete no campo rastreio por enquanto ou cria um campo 'tipo_frete'
                     itens_snapshot: cart,
                     endereco_entrega_snapshot: { 
                         destinatario: nome, 
                         rua: endereco, 
-                        email: email 
+                        email: email,
+                        frete_escolhido: shippingInfo
                     }
                 };
 
@@ -230,17 +240,28 @@
                 });
 
                 if (resPedido.ok) {
-                    // Sucesso Total
                     localStorage.removeItem('cart');
-                    alert(`✅ PEDIDO RECEBIDO!\n\nVocê pode acompanhar o status acessando 'Minha Conta'.`);
-                    window.location.href = "painel.html"; // Redireciona para o novo painel
+                    localStorage.removeItem('shipping_info');
+                    
+                    // ALERTA BONITO
+                    Swal.fire({
+                        title: 'Pedido Confirmado! 🎉',
+                        text: `Valor Total: R$ ${finalTotal.toFixed(2)}\nVocê pode acompanhar o status em "Minha Conta".`,
+                        icon: 'success',
+                        confirmButtonText: 'Ir para Painel',
+                        confirmButtonColor: '#008f39',
+                        allowOutsideClick: false
+                    }).then(() => {
+                        window.location.href = "painel.html";
+                    });
+
                 } else {
                     throw new Error("Erro ao salvar pedido.");
                 }
 
             } catch (e) {
                 console.error(e);
-                alert("Ocorreu um erro ao processar o pedido. Tente novamente.");
+                Swal.fire('Erro', 'Ocorreu um erro ao processar. Tente novamente.', 'error');
                 btn.disabled = false;
                 btn.innerText = "CONFIRMAR PEDIDO";
             }

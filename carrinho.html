@@ -21,11 +21,28 @@
         .btn-small { background: #eee; border: none; width: 25px; height: 25px; cursor: pointer; border-radius: 4px; font-weight: bold; }
         .trash { color: red; cursor: pointer; margin-left: 20px; }
 
-        .total-box { background: white; padding: 20px; border-radius: 8px; text-align: right; margin-top: 20px; }
-        .total-val { font-size: 1.5rem; font-weight: 900; color: var(--primary); }
-        .btn-checkout { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; margin-top: 15px; }
+        /* ÁREA DE TOTAIS E FRETE */
+        .summary-box { background: white; padding: 25px; border-radius: 8px; margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         
+        .freight-area h4 { margin-top: 0; color: var(--secondary); }
+        .cep-input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .cep-input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .cep-input-group button { background: var(--secondary); color: white; border: none; padding: 0 20px; border-radius: 4px; cursor: pointer; }
+        
+        .freight-options { list-style: none; padding: 0; }
+        .freight-option { padding: 10px; border: 1px solid #eee; margin-bottom: 8px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .freight-option:hover { background: #f9f9f9; }
+        .freight-option.selected { border-color: var(--primary); background: #e8f5e9; font-weight: bold; }
+
+        .total-area { text-align: right; display: flex; flex-direction: column; justify-content: space-between; }
+        .sub-lines { font-size: 0.9rem; color: #666; margin-bottom: 5px; }
+        .total-val { font-size: 1.8rem; font-weight: 900; color: var(--primary); display: block; margin-top: 10px; }
+        .btn-checkout { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; margin-top: 15px; width: 100%; font-weight: bold; }
+        .btn-checkout:disabled { background: #ccc; cursor: not-allowed; }
+
         .empty-cart { text-align: center; padding: 50px; opacity: 0.6; }
+
+        @media(max-width: 700px) { .summary-box { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -34,17 +51,34 @@
         <a href="index.html" style="text-decoration:none; color:#666;">&larr; Voltar para Loja</a>
         <h1><i class="fas fa-shopping-cart"></i> Seu Carrinho</h1>
         
-        <div id="cart-list">
+        <div id="cart-list"></div>
+
+        <div class="summary-box" id="summary-box" style="display:none;">
+            <div class="freight-area">
+                <h4>Simular Frete e Prazo</h4>
+                <div class="cep-input-group">
+                    <input type="text" id="cep" placeholder="Digite seu CEP" maxlength="9">
+                    <button onclick="calcularFrete()">OK</button>
+                </div>
+                <div id="freight-results"></div>
             </div>
 
-        <div class="total-box" id="total-box" style="display:none;">
-            <p>Subtotal: <span class="total-val" id="total-display">R$ 0,00</span></p>
-            <button class="btn-checkout" onclick="window.location.href='checkout.html'">FECHAR PEDIDO</button>
+            <div class="total-area">
+                <div>
+                    <div class="sub-lines">Subtotal: <span id="subtotal-display">R$ 0,00</span></div>
+                    <div class="sub-lines">Frete: <span id="freight-display">---</span></div>
+                    <span class="total-val" id="total-display">R$ 0,00</span>
+                </div>
+                <button class="btn-checkout" onclick="irParaCheckout()" id="btn-finalizar">FECHAR PEDIDO</button>
+            </div>
         </div>
     </div>
 
     <script>
         const API_URL = "https://api2.leanttro.com";
+        let currentTotal = 0;
+        let selectedFreight = 0;
+
         function getImageUrl(id) { return id ? `${API_URL}/assets/${id}` : ''; }
         function formatMoney(val) { return parseFloat(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
@@ -54,13 +88,13 @@
             
             if (cart.length === 0) {
                 list.innerHTML = '<div class="empty-cart"><h2>Seu carrinho está vazio</h2><p>Adicione peças para começar.</p></div>';
-                document.getElementById('total-box').style.display = 'none';
+                document.getElementById('summary-box').style.display = 'none';
                 return;
             }
 
-            let total = 0;
+            let subtotal = 0;
             list.innerHTML = cart.map((item, index) => {
-                total += item.preco * item.qtd;
+                subtotal += item.preco * item.qtd;
                 return `
                 <div class="cart-item">
                     <div style="display:flex; align-items:center;">
@@ -79,8 +113,76 @@
                 </div>`;
             }).join('');
 
-            document.getElementById('total-display').innerText = formatMoney(total);
-            document.getElementById('total-box').style.display = 'block';
+            currentTotal = subtotal;
+            document.getElementById('subtotal-display').innerText = formatMoney(subtotal);
+            updateTotal();
+            document.getElementById('summary-box').style.display = 'grid';
+        }
+
+        function updateTotal() {
+            const final = currentTotal + selectedFreight;
+            document.getElementById('total-display').innerText = formatMoney(final);
+            document.getElementById('freight-display').innerText = selectedFreight > 0 ? formatMoney(selectedFreight) : '---';
+        }
+
+        async function calcularFrete() {
+            const cep = document.getElementById('cep').value.replace(/\D/g, '');
+            if (cep.length !== 8) { alert("CEP inválido"); return; }
+
+            const div = document.getElementById('freight-results');
+            div.innerHTML = '<p style="font-size:0.8rem; color:#666">Buscando...</p>';
+
+            try {
+                // 1. Busca localidade REAL (ViaCEP)
+                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const data = await res.json();
+                
+                if(data.erro) { div.innerHTML = '<p style="color:red">CEP não encontrado.</p>'; return; }
+
+                // 2. Simula Preço (Baseado no primeiro dígito do CEP para variar)
+                // Região 0-4 (SP/RJ/MG) = Barato, Outros = Caro
+                const regionFactor = parseInt(cep[0]); 
+                const basePrice = regionFactor < 5 ? 15 : 35; 
+
+                // Gera opções simuladas
+                const pacPrice = basePrice + (Math.random() * 5);
+                const sedexPrice = (basePrice * 1.8) + (Math.random() * 5);
+                const pacDays = regionFactor < 5 ? 5 : 12;
+                const sedexDays = regionFactor < 5 ? 2 : 4;
+
+                div.innerHTML = `
+                    <p style="font-size:0.8rem; margin-bottom:10px; color:#003366;"><b>${data.localidade}/${data.uf}</b></p>
+                    <ul class="freight-options">
+                        <li class="freight-option" onclick="selectFreight(${pacPrice}, 'PAC')">
+                            <span><i class="fas fa-truck"></i> PAC (${pacDays} dias)</span>
+                            <b>${formatMoney(pacPrice)}</b>
+                        </li>
+                        <li class="freight-option" onclick="selectFreight(${sedexPrice}, 'SEDEX')">
+                            <span><i class="fas fa-shipping-fast"></i> SEDEX (${sedexDays} dias)</span>
+                            <b>${formatMoney(sedexPrice)}</b>
+                        </li>
+                    </ul>
+                `;
+
+            } catch(e) {
+                div.innerHTML = '<p>Erro ao calcular.</p>';
+            }
+        }
+
+        function selectFreight(price, type) {
+            selectedFreight = price;
+            
+            // Visual
+            document.querySelectorAll('.freight-option').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            updateTotal();
+
+            // Salva no LocalStorage para o Checkout usar
+            localStorage.setItem('shipping_info', JSON.stringify({
+                valor: price,
+                tipo: type
+            }));
         }
 
         function changeQtd(index, delta) {
@@ -96,6 +198,10 @@
             cart.splice(index, 1);
             localStorage.setItem('cart', JSON.stringify(cart));
             renderCart();
+        }
+
+        function irParaCheckout() {
+            window.location.href = 'checkout.html';
         }
 
         window.onload = renderCart;

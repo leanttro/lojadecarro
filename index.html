@@ -54,10 +54,13 @@
         .badge { position: absolute; top: -8px; right: -8px; background: var(--accent); color: var(--secondary); font-size: 0.7rem; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
         /* --- NAVIGATION --- */
-        .nav-section { background: var(--white); border-bottom: 1px solid #eee; }
+        .nav-section { background: var(--white); border-bottom: 1px solid #eee; position: relative; }
         .nav-menu ul { display: flex; justify-content: center; gap: 40px; padding: 15px 0; }
         .nav-menu a { font-weight: 600; font-size: 0.9rem; color: var(--text-dark); text-transform: uppercase; letter-spacing: 0.5px; }
         .nav-menu a:hover { color: var(--primary); }
+        
+        /* Botão Hamburguer (Escondido no Desktop) */
+        .mobile-menu-btn { display: none; font-size: 1.5rem; color: var(--secondary); cursor: pointer; padding: 15px; width: 100%; text-align: center; border: none; background: transparent; }
 
         /* --- VEHICLE FILTER --- */
         .vehicle-filter { background: var(--secondary); padding: 25px 0; color: white; }
@@ -128,10 +131,35 @@
         .footer-col li { margin-bottom: 10px; font-size: 0.9rem; opacity: 0.8; cursor: pointer; }
         .footer-col li:hover { opacity: 1; color: var(--accent); }
 
+        /* --- MEDIA QUERIES (MOBILE FIXES) --- */
         @media (max-width: 992px) {
             .filter-grid { grid-template-columns: 1fr; }
             .footer-grid { grid-template-columns: 1fr 1fr; }
             .blog-card { min-width: 300px; }
+        }
+
+        /* MOBILE MENU ESPECÍFICO */
+        @media (max-width: 768px) {
+            /* Arrumar Header (quebra de linha) */
+            .top-header { flex-wrap: wrap; }
+            .search-main { order: 3; width: 100%; max-width: 100%; margin-top: 10px; }
+            
+            /* Mostrar Botão Hamburguer */
+            .mobile-menu-btn { display: block; }
+            
+            /* Menu Escondido por Padrão */
+            .nav-menu ul { display: none; flex-direction: column; background: white; border-top: 1px solid #eee; padding: 0; gap: 0; }
+            
+            /* Menu Aberto */
+            .nav-menu ul.show { display: flex; animation: slideDown 0.3s ease; }
+            
+            .nav-menu li { width: 100%; border-bottom: 1px solid #f5f5f5; text-align: center; }
+            .nav-menu a { display: block; padding: 15px; width: 100%; }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -164,8 +192,12 @@
 
     <section class="nav-section">
         <div class="container">
+            <button class="mobile-menu-btn" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i> MENU DE DEPARTAMENTOS
+            </button>
+
             <nav class="nav-menu">
-                <ul>
+                <ul id="main-menu">
                     <li><a href="index.html">Início</a></li>
                     <li><a href="catalogo.html">Peças</a></li>
                     <li><a href="catalogo.html">Acessórios</a></li>
@@ -334,6 +366,12 @@
         // --- CONFIGURAÇÕES ---
         const API_URL = "https://api2.leanttro.com";
         
+        // --- FUNÇÃO MENU MOBILE ---
+        function toggleMenu() {
+            const menu = document.getElementById('main-menu');
+            menu.classList.toggle('show');
+        }
+
         // --- UTILITÁRIOS ---
         function getImageUrl(imageId) {
             if (!imageId) return 'https://via.placeholder.com/300?text=Sem+Imagem';
