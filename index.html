@@ -28,7 +28,7 @@
         html, body { 
             width: 100%;
             max-width: 100%;
-            overflow-x: hidden; /* Garante que não role para os lados no Mobile */
+            overflow-x: hidden; 
             margin: 0; 
             padding: 0;
             box-sizing: border-box;
@@ -49,7 +49,7 @@
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-accent { background: var(--accent); color: var(--secondary); }
 
-        /* --- WHATSAPP FLUTUANTE (VISÍVEL EM DESKTOP E MOBILE) --- */
+        /* --- WHATSAPP FLUTUANTE --- */
         .whatsapp-float {
             position: fixed;
             width: 60px;
@@ -77,8 +77,11 @@
         header { background: var(--white); border-bottom: 1px solid #eee; padding: 15px 0; }
         .top-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
         
-        .logo-text { font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
+        /* LOGO AREA */
+        .logo-area { display: flex; flex-direction: column; }
+        .logo-text { font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: -1px; line-height: 1; }
         .logo-text span { color: var(--secondary); }
+        .demo-label { font-size: 0.65rem; color: #999; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-top: 3px; margin-left: 2px; }
         
         .search-main { flex: 1; max-width: 600px; position: relative; }
         .search-main input { width: 100%; padding: 12px 50px 12px 20px; border: 1px solid #ddd; border-radius: 4px; outline: none; background: #f9f9f9; }
@@ -185,9 +188,10 @@
                 gap: 15px;
             }
             
-            /* 2. Logo Centralizado */
-            .logo-text { 
+            /* 2. Logo Centralizado + Subtítulo */
+            .logo-area { 
                 width: 100%; 
+                align-items: center; /* Garante que o texto fique no meio */
                 margin-bottom: 5px;
             }
 
@@ -232,7 +236,10 @@
     <header>
         <div class="container">
             <div class="top-header">
-                <a href="index.html" class="logo-text">LEANTTRO <span>AUTO-PEÇAS</span></a>
+                <div class="logo-area">
+                    <a href="index.html" class="logo-text">LEANTTRO <span>AUTO-PEÇAS</span></a>
+                    <span class="demo-label">loja demonstrativa</span>
+                </div>
                 
                 <div class="header-actions">
                     <a href="conta.html" class="action-item">
