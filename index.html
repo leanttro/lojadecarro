@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -116,8 +117,8 @@
 
         /* --- CATEGORIES CIRCULAR --- */
         .categories-section { padding: 40px 0; background: var(--white); }
-        .cat-grid { display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
-        .cat-item { flex: 1; min-width: 100px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; cursor: pointer; }
+        .cat-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .cat-item { width: 110px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; cursor: pointer; }
         .cat-circle { width: 85px; height: 85px; background: #f8f9fa; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; transition: var(--transition); overflow: hidden; }
         .cat-circle i { font-size: 2rem; color: var(--secondary); }
         .cat-item span { font-size: 0.8rem; font-weight: 700; color: var(--secondary); text-transform: uppercase; }
@@ -180,45 +181,19 @@
 
         /* MOBILE MENU ESPECÍFICO */
         @media (max-width: 768px) {
-            /* 1. Header em Coluna para Centralizar Logo */
-            .top-header { 
-                flex-direction: column; 
-                align-items: center; 
-                text-align: center;
-                gap: 15px;
-            }
-            
-            /* 2. Logo Centralizado + Subtítulo */
-            .logo-area { 
-                width: 100%; 
-                align-items: center; /* Garante que o texto fique no meio */
-                margin-bottom: 5px;
-            }
-
-            /* 3. Ícones (Carrinho/Conta) Centralizados abaixo do logo */
-            .header-actions {
-                width: 100%;
-                justify-content: center;
-                margin-bottom: 10px;
-            }
-
-            /* 4. Busca ocupando largura total */
-            .search-main { 
-                width: 100%; 
-                max-width: 100%; 
-            }
-            
-            /* Mostrar Botão Hamburguer */
+            .top-header { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
+            .logo-area { width: 100%; align-items: center; margin-bottom: 5px; }
+            .header-actions { width: 100%; justify-content: center; margin-bottom: 10px; }
+            .search-main { width: 100%; max-width: 100%; }
             .mobile-menu-btn { display: block; }
-            
-            /* Menu Escondido por Padrão */
             .nav-menu ul { display: none; flex-direction: column; background: white; border-top: 1px solid #eee; padding: 0; gap: 0; }
-            
-            /* Menu Aberto */
             .nav-menu ul.show { display: flex; animation: slideDown 0.3s ease; }
-            
             .nav-menu li { width: 100%; border-bottom: 1px solid #f5f5f5; text-align: center; }
             .nav-menu a { display: block; padding: 15px; width: 100%; }
+            .cat-grid { gap: 10px; }
+            .cat-item { width: 90px; }
+            .cat-circle { width: 70px; height: 70px; }
+            .cat-circle i { font-size: 1.5rem; }
         }
 
         @keyframes slideDown {
@@ -319,35 +294,8 @@
 
     <section class="categories-section">
         <div class="container">
-            <div class="cat-grid">
-                <div class="cat-item" onclick="window.location.href='catalogo.html'">
-                    <div class="cat-circle"><i class="fas fa-cogs"></i></div>
-                    <span>Motor</span>
-                </div>
-                <div class="cat-item" onclick="window.location.href='catalogo.html'">
-                    <div class="cat-circle"><i class="fas fa-oil-can"></i></div>
-                    <span>Óleos</span>
-                </div>
-                <div class="cat-item" onclick="window.location.href='catalogo.html'">
-                    <div class="cat-circle"><i class="fas fa-car-battery"></i></div>
-                    <span>Baterias</span>
-                </div>
-                <div class="cat-item" onclick="window.location.href='catalogo.html'">
-                    <div class="cat-circle"><i class="fas fa-tools"></i></div>
-                    <span>Suspensão</span>
-                </div>
-                <div class="cat-item" onclick="window.location.href='catalogo.html'">
-                    <div class="cat-circle"><i class="fas fa-lightbulb"></i></div>
-                    <span>Iluminação</span>
-                </div>
-                <div class="cat-item" onclick="window.location.href='catalogo.html'">
-                    <div class="cat-circle"><i class="fas fa-fan"></i></div>
-                    <span>Arrefecimento</span>
-                </div>
-                <div class="cat-item" onclick="window.location.href='catalogo.html'">
-                    <div class="cat-circle"><i class="fas fa-compact-disc"></i></div>
-                    <span>Freios</span>
-                </div>
+            <div class="cat-grid" id="cat-grid">
+                <p style="text-align:center; width:100%;">Carregando categorias...</p>
             </div>
         </div>
     </section>
@@ -434,16 +382,26 @@
     </footer>
 
     <script>
-        // --- CONFIGURAÇÕES ---
         const API_URL = "https://api2.leanttro.com";
         
-        // --- FUNÇÃO MENU MOBILE ---
+        // --- MAPEAMENTO DE ÍCONES (NOME DO BANCO -> CLASSE CSS) ---
+        const iconMap = {
+            'freios': 'fas fa-compact-disc',
+            'motor': 'fas fa-cogs',
+            'oleos': 'fas fa-oil-can',
+            'baterias': 'fas fa-car-battery',
+            'suspensao': 'fas fa-tools',
+            'iluminacao': 'fas fa-lightbulb',
+            'arrefecimento': 'fas fa-fan',
+            'pneus': 'fas fa-circle-notch',
+            'acessorios': 'fas fa-shopping-bag'
+        };
+
         function toggleMenu() {
             const menu = document.getElementById('main-menu');
             menu.classList.toggle('show');
         }
 
-        // --- UTILITÁRIOS ---
         function getImageUrl(imageId) {
             if (!imageId) return 'https://via.placeholder.com/300?text=Sem+Imagem';
             return `${API_URL}/assets/${imageId}`;
@@ -467,15 +425,60 @@
             }
         }
 
-        // --- 1. PRODUTOS ---
-        async function carregarProdutos(filtroVersaoId = null) {
+        // --- 1. CATEGORIAS DINÂMICAS ---
+        async function carregarCategorias() {
+            const container = document.getElementById('cat-grid');
+            try {
+                // Busca categorias que têm status 'published'
+                const res = await fetch(`${API_URL}/items/categorias?status=published`);
+                const json = await res.json();
+                
+                if(!json.data || json.data.length === 0) {
+                    container.innerHTML = '<p>Nenhuma categoria.</p>';
+                    return;
+                }
+
+                container.innerHTML = json.data.map(cat => {
+                    const iconClass = iconMap[cat.slug] || 'fas fa-box';
+                    // AGORA CHAMA A FUNÇÃO FILTRAR E NÃO MUDA DE PÁGINA
+                    return `
+                        <div class="cat-item" onclick="filtrarCategoria('${cat.id}', '${cat.nome}')">
+                            <div class="cat-circle"><i class="${iconClass}"></i></div>
+                            <span>${cat.nome}</span>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch(e) { console.error(e); }
+        }
+
+        // --- 2. NOVA FUNÇÃO DE FILTRO NA PRÓPRIA PÁGINA ---
+        function filtrarCategoria(id, nome) {
+            // Rola até a sessão de produtos
+            document.querySelector('.products-section').scrollIntoView({ behavior: 'smooth' });
+            
+            // Atualiza o Título da Seção
+            const title = document.querySelector('.section-header h2');
+            title.innerText = `Categoria: ${nome}`;
+            
+            // Recarrega produtos com o filtro
+            carregarProdutos(null, id);
+        }
+
+        // --- 3. PRODUTOS (Agora aceita Categoria ID) ---
+        async function carregarProdutos(filtroVersaoId = null, categoriaId = null) {
             const container = document.getElementById('product-container');
             container.innerHTML = '<p style="padding:20px; grid-column:1/-1; text-align:center;">Carregando estoque...</p>';
 
             try {
                 let url = `${API_URL}/items/produtos?fields=*,imagem_destaque`;
+                
+                // Lógica de Filtro
                 if (filtroVersaoId) {
                     url += `&filter[veiculos_compativeis][veiculos_versoes_id][_eq]=${filtroVersaoId}`;
+                } else if (categoriaId) {
+                    // Se tiver categoria, filtra por ela
+                    url += `&filter[categoria_id][_eq]=${categoriaId}`;
                 }
 
                 const response = await fetch(url);
@@ -486,7 +489,7 @@
                     container.innerHTML = `
                         <div style="grid-column: 1/-1; text-align:center; padding: 40px; background: #fff; border-radius: 8px;">
                             <i class="fas fa-search" style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i>
-                            <h3>Nenhuma peça encontrada para este veículo.</h3>
+                            <h3>Nenhuma peça encontrada.</h3>
                             <button class="btn btn-primary" style="margin-top:15px" onclick="window.location.href='catalogo.html'">Ver Tudo</button>
                         </div>`;
                     return;
@@ -514,7 +517,6 @@
             }
         }
 
-        // --- FUNÇÃO CARRINHO ---
         function addToCart(id, nome, preco, img) {
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
             const existing = cart.find(x => x.id === id);
@@ -528,7 +530,7 @@
             alert(`"${nome}" adicionado ao carrinho!`);
         }
 
-        // --- 2. FILTRO DE VEÍCULOS ---
+        // --- 4. FILTROS VEÍCULO ---
         async function carregarMarcas() {
             try {
                 const response = await fetch(`${API_URL}/items/veiculos_marcas?sort=nome`);
@@ -542,13 +544,10 @@
             const marcaId = document.getElementById('filter-marca').value;
             const selectModelo = document.getElementById('filter-modelo');
             const selectVersao = document.getElementById('filter-versao');
-            
             selectModelo.innerHTML = '<option>Carregando...</option>';
             selectVersao.innerHTML = '<option>Aguarde o modelo...</option>';
             selectVersao.disabled = true;
-
             if (!marcaId) return;
-
             const response = await fetch(`${API_URL}/items/veiculos_modelos?filter[marca_id][_eq]=${marcaId}&sort=nome`);
             const json = await response.json();
             selectModelo.innerHTML = '<option value="">Selecione o Modelo</option>' + 
@@ -559,9 +558,7 @@
         async function carregarVersoes() {
             const modeloId = document.getElementById('filter-modelo').value;
             const selectVersao = document.getElementById('filter-versao');
-
             if (!modeloId) return;
-
             const response = await fetch(`${API_URL}/items/veiculos_versoes?filter[modelo_id][_eq]=${modeloId}&sort=nome`);
             const json = await response.json();
             selectVersao.innerHTML = '<option value="">Selecione a Versão</option>' + 
@@ -583,18 +580,16 @@
             });
         }
 
-        // --- 3. BLOG ---
+        // --- 5. BLOG ---
         async function carregarBlog() {
             const container = document.getElementById('blog-carousel');
             try {
                 const response = await fetch(`${API_URL}/items/posts?status=published&fields=*,capa`);
                 const json = await response.json();
-                
                 if (!json.data || json.data.length === 0) {
                     container.innerHTML = '<p style="padding:20px">Em breve novidades aqui!</p>';
                     return; 
                 }
-
                 container.innerHTML = json.data.map(post => `
                     <div class="blog-card" onclick="openPost('${post.titulo.replace(/'/g, "\\'")}', '${post.conteudo ? post.conteudo.replace(/'/g, "\\'").replace(/\n/g, '<br>') : ''}')">
                         <div class="blog-image" style="background-image: url('${getImageUrl(post.capa)}')">
@@ -611,7 +606,6 @@
             } catch (e) { console.error("Erro blog", e); }
         }
 
-        // --- MODAIS E UTILITÁRIOS ---
         function openPost(titulo, conteudo) {
             document.getElementById('modal-title').innerText = titulo;
             document.getElementById('modal-text').innerHTML = conteudo;
@@ -637,9 +631,10 @@
         // --- INICIALIZAÇÃO ---
         window.onload = () => {
             updateCartCount();
-            checkLogin(); // VERIFICA LOGIN
+            checkLogin();
+            carregarCategorias(); // Carrega as bolinhas do banco
             carregarMarcas();
-            carregarProdutos();
+            carregarProdutos(); // Carrega Destaques (sem filtro)
             carregarBlog();
         };
     </script>
