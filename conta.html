@@ -4,133 +4,208 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Conta | Leanttro Auto</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #008f39; --secondary: #003366; --bg-light: #f4f7f6; --radius: 8px; }
-        body { font-family: 'Roboto', sans-serif; background: var(--bg-light); color: #333; margin: 0; }
-        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        :root { --primary: #008f39; --secondary: #003366; --bg: #f4f7f6; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg); margin: 0; color: #333; }
+        .container { max-width: 1000px; margin: 40px auto; padding: 20px; }
         
-        /* HEADER SIMPLES */
-        .simple-header { text-align: center; margin-bottom: 40px; }
-        .logo { font-size: 1.8rem; font-weight: 900; color: var(--primary); text-decoration: none; }
-        .logo span { color: var(--secondary); }
+        /* AUTH BOX */
+        .auth-box { max-width: 400px; margin: 50px auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .btn:hover { background: #006b2b; }
+        .toggle-link { color: var(--secondary); cursor: pointer; font-size: 0.9rem; margin-top: 15px; display: block; text-decoration: underline; }
 
-        /* CARD DE LOGIN */
-        .auth-card { background: white; padding: 40px; border-radius: var(--radius); box-shadow: 0 5px 20px rgba(0,0,0,0.05); max-width: 400px; margin: 0 auto; text-align: center; }
-        .auth-card h2 { color: var(--secondary); margin-bottom: 20px; }
-        .input-group { margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
-        .btn-action { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: 0.3s; }
-        .btn-action:hover { background: #006b2b; }
+        /* DASHBOARD */
+        .dashboard { display: none; grid-template-columns: 250px 1fr; gap: 30px; }
+        .sidebar { background: white; padding: 20px; border-radius: 8px; height: fit-content; }
+        .menu-item { display: block; padding: 15px; color: #555; text-decoration: none; border-bottom: 1px solid #eee; cursor: pointer; }
+        .menu-item:hover, .menu-item.active { color: var(--primary); font-weight: bold; }
+        .content-area { background: white; padding: 30px; border-radius: 8px; }
 
-        /* DASHBOARD (ESCONDIDO INICIALMENTE) */
-        .dashboard { display: none; }
-        .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .user-info h2 { color: var(--secondary); margin-bottom: 5px; }
-        .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        /* PEDIDOS */
+        .order-card { border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .status { display: inline-block; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .st-pendente { background: #fff3cd; color: #856404; }
+        .st-pago { background: #d4edda; color: #155724; }
+        .st-enviado { background: #cce5ff; color: #004085; }
 
-        /* LISTA DE PEDIDOS */
-        .order-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 20px; border-left: 5px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .order-card.status-pendente { border-left-color: #f1c40f; } /* Amarelo */
-        .order-card.status-pago { border-left-color: #3498db; }     /* Azul */
-        .order-card.status-enviado { border-left-color: #2ecc71; }  /* Verde */
-        .order-card.status-cancelado { border-left-color: #e74c3c; } /* Vermelho */
-
-        .order-header { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-        .order-id { font-weight: bold; color: #555; }
-        .order-date { color: #888; font-size: 0.9rem; }
-        
-        .order-body { display: flex; justify-content: space-between; align-items: center; }
-        .order-total { font-size: 1.2rem; font-weight: 900; color: var(--secondary); }
-        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; background: #eee; color: #555; }
-        
-        /* Cores dos Badges */
-        .bg-pendente { background: #fff3cd; color: #856404; }
-        .bg-enviado { background: #d4edda; color: #155724; }
-        .bg-pago { background: #cce5ff; color: #004085; }
-
-        .tracking-box { margin-top: 15px; background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
-        .tracking-box i { color: var(--primary); }
-
+        @media(max-width: 768px) { .dashboard { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="simple-header">
-            <a href="index.html" class="logo">LEANTTRO <span>AUTO-PEÇAS</span></a>
-        </div>
-
-        <div id="login-screen" class="auth-card">
-            <h2><i class="fas fa-user-lock"></i> Acessar Conta</h2>
-            <p style="margin-bottom:20px; color:#666;">Digite o e-mail utilizado na compra para ver seus pedidos.</p>
+    <div id="auth-screen" class="container">
+        <div class="auth-box">
+            <h2 id="form-title" style="color:var(--secondary)">Acessar Painel</h2>
             
-            <div class="input-group">
-                <label>Seu E-mail</label>
-                <input type="email" id="email-input" placeholder="exemplo@email.com">
+            <input type="email" id="email" placeholder="Seu E-mail">
+            <input type="password" id="senha" placeholder="Sua Senha">
+            
+            <div id="nome-field" style="display:none;">
+                <input type="text" id="nome" placeholder="Seu Nome Completo">
+            </div>
+
+            <button class="btn" onclick="handleAuth()" id="btn-action">ENTRAR</button>
+            <span class="toggle-link" onclick="toggleMode()" id="toggle-text">Não tem conta? Cadastre-se</span>
+            <p id="msg" style="color:red; margin-top:10px; font-size:0.9rem;"></p>
+        </div>
+    </div>
+
+    <div id="dash-screen" class="container dashboard">
+        <aside class="sidebar">
+            <div style="text-align:center; margin-bottom:20px;">
+                <i class="fas fa-user-circle" style="font-size:3rem; color:var(--secondary)"></i>
+                <h3 id="user-name">Carregando...</h3>
+            </div>
+            <a class="menu-item active" onclick="showTab('pedidos')"><i class="fas fa-box"></i> Meus Pedidos</a>
+            <a class="menu-item" onclick="showTab('dados')"><i class="fas fa-id-card"></i> Meus Dados</a>
+            <a class="menu-item" onclick="logout()" style="color:red;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </aside>
+
+        <main class="content-area">
+            <div id="tab-pedidos">
+                <h2>Histórico de Pedidos</h2>
+                <div id="lista-pedidos"><p>Carregando...</p></div>
             </div>
             
-            <button class="btn-action" onclick="fazerLogin()">ACESSAR</button>
-            <p id="msg-erro" style="color:red; margin-top:15px; font-size:0.9rem;"></p>
-        </div>
-
-        <div id="dashboard-screen" class="dashboard">
-            <div class="dash-header">
-                <div class="user-info">
-                    <h2 id="user-name">Olá, Cliente</h2>
-                    <p style="color:#777;">Aqui estão seus pedidos recentes.</p>
-                </div>
-                <button class="btn-logout" onclick="logout()">Sair</button>
+            <div id="tab-dados" style="display:none;">
+                <h2>Meus Dados Cadastrais</h2>
+                <p><b>Nome:</b> <span id="d-nome"></span></p>
+                <p><b>Email:</b> <span id="d-email"></span></p>
+                <p><b>ID Cliente:</b> <span id="d-id"></span></p>
             </div>
-
-            <div id="orders-list">
-                <p>Carregando pedidos...</p>
-            </div>
-        </div>
+        </main>
     </div>
 
     <script>
         const API_URL = "https://api2.leanttro.com";
+        let isLoginMode = true;
 
-        // Utilitários
-        function formatMoney(val) { return parseFloat(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('pt-BR');
+        // --- CRIPTOGRAFIA (SHA-256) ---
+        async function hashPassword(str) {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        // --- 1. LÓGICA DE LOGIN ---
-        async function fazerLogin() {
-            const email = document.getElementById('email-input').value.trim();
-            const msg = document.getElementById('msg-erro');
-            
-            if (!email) { msg.innerText = "Por favor, digite seu e-mail."; return; }
-            msg.innerText = "Verificando...";
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('form-title').innerText = isLoginMode ? "Acessar Painel" : "Criar Nova Conta";
+            document.getElementById('btn-action').innerText = isLoginMode ? "ENTRAR" : "CADASTRAR";
+            document.getElementById('toggle-text').innerText = isLoginMode ? "Não tem conta? Cadastre-se" : "Já tem conta? Fazer Login";
+            document.getElementById('nome-field').style.display = isLoginMode ? 'none' : 'block';
+            document.getElementById('msg').innerText = "";
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('email').value.toLowerCase().trim();
+            const senha = document.getElementById('senha').value;
+            const msg = document.getElementById('msg');
+
+            if (!email || !senha) return msg.innerText = "Preencha todos os campos.";
 
             try {
-                // Busca o cliente no banco pelo e-mail
-                const res = await fetch(`${API_URL}/items/clientes_loja?filter[email][_eq]=${email}`);
-                const json = await res.json();
+                const senhaHash = await hashPassword(senha);
 
-                if (json.data && json.data.length > 0) {
-                    // Cliente encontrado!
-                    const cliente = json.data[0];
+                if (isLoginMode) {
+                    // LOGIN
+                    const res = await fetch(`${API_URL}/items/clientes_loja?filter[email][_eq]=${email}`);
+                    const json = await res.json();
                     
-                    // Salva na "Sessão" (LocalStorage)
-                    localStorage.setItem('user_session', JSON.stringify(cliente));
-                    
-                    // Vai para o painel
-                    mostrarDashboard(cliente);
+                    if (json.data.length > 0) {
+                        const user = json.data[0];
+                        // Compara o hash gerado com o do banco
+                        if (user.senha_hash === senhaHash) {
+                            loginSuccess(user);
+                        } else {
+                            msg.innerText = "Senha incorreta.";
+                        }
+                    } else {
+                        msg.innerText = "E-mail não encontrado.";
+                    }
                 } else {
-                    msg.innerText = "E-mail não encontrado. Você já fez sua primeira compra?";
-                }
+                    // CADASTRO
+                    const nome = document.getElementById('nome').value;
+                    if(!nome) return msg.innerText = "Digite seu nome.";
 
+                    const payload = {
+                        status: "published",
+                        nome: nome,
+                        email: email,
+                        senha_hash: senhaHash
+                    };
+
+                    const res = await fetch(`${API_URL}/items/clientes_loja`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        alert("Conta criada! Faça login.");
+                        toggleMode();
+                    } else {
+                        msg.innerText = "Erro ao criar conta (E-mail já existe?)";
+                    }
+                }
             } catch (e) {
                 console.error(e);
-                msg.innerText = "Erro ao conectar. Tente novamente.";
+                msg.innerText = "Erro de conexão.";
             }
+        }
+
+        function loginSuccess(user) {
+            localStorage.setItem('user_session', JSON.stringify(user));
+            renderDashboard(user);
+        }
+
+        function renderDashboard(user) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('dash-screen').style.display = 'grid';
+            
+            document.getElementById('user-name').innerText = user.nome;
+            document.getElementById('d-nome').innerText = user.nome;
+            document.getElementById('d-email').innerText = user.email;
+            document.getElementById('d-id').innerText = user.id;
+
+            loadOrders(user.id);
+        }
+
+        async function loadOrders(userId) {
+            const div = document.getElementById('lista-pedidos');
+            try {
+                const res = await fetch(`${API_URL}/items/pedidos?filter[cliente_id][_eq]=${userId}&sort=-date_created`);
+                const json = await res.json();
+                
+                if(json.data.length === 0) {
+                    div.innerHTML = '<p>Nenhum pedido encontrado.</p>';
+                    return;
+                }
+
+                div.innerHTML = json.data.map(p => `
+                    <div class="order-card">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <strong>Pedido #${p.id.substring(0,8).toUpperCase()}</strong>
+                            <span class="status st-${p.status}">${p.status}</span>
+                        </div>
+                        <div>Total: R$ ${parseFloat(p.total).toFixed(2).replace('.',',')}</div>
+                        <div style="margin-top:10px; font-size:0.9rem; color:#666;">
+                            ${p.rastreio ? `<i class="fas fa-truck"></i> Rastreio: ${p.rastreio}` : 'Aguardando envio'}
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch(e) { console.error(e); }
+        }
+
+        function showTab(tab) {
+            document.getElementById('tab-pedidos').style.display = tab === 'pedidos' ? 'block' : 'none';
+            document.getElementById('tab-dados').style.display = tab === 'dados' ? 'block' : 'none';
+            
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+            event.target.classList.add('active');
         }
 
         function logout() {
@@ -138,81 +213,11 @@
             location.reload();
         }
 
-        // --- 2. LÓGICA DO DASHBOARD ---
-        function verificarSessao() {
+        // Verifica se já está logado ao abrir
+        window.onload = () => {
             const session = localStorage.getItem('user_session');
-            if (session) {
-                mostrarDashboard(JSON.parse(session));
-            }
-        }
-
-        async function mostrarDashboard(cliente) {
-            // Esconde login, mostra dashboard
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('dashboard-screen').style.display = 'block';
-            document.getElementById('user-name').innerText = `Olá, ${cliente.nome.split(' ')[0]}`;
-
-            // Busca os pedidos desse cliente
-            const listContainer = document.getElementById('orders-list');
-            listContainer.innerHTML = '<p>Buscando histórico...</p>';
-
-            try {
-                const res = await fetch(`${API_URL}/items/pedidos?filter[cliente_id][_eq]=${cliente.id}&sort=-date_created`);
-                const json = await res.json();
-                const pedidos = json.data;
-
-                if (pedidos.length === 0) {
-                    listContainer.innerHTML = '<div style="text-align:center; padding:30px; color:#777;">Você ainda não tem pedidos registrados.</div>';
-                    return;
-                }
-
-                listContainer.innerHTML = pedidos.map(p => {
-                    // Define cor e texto do status
-                    let statusClass = 'bg-pendente';
-                    let statusText = p.status;
-                    let trackingHtml = '';
-
-                    if (p.status === 'pago') { statusClass = 'bg-pago'; statusText = 'Pagamento Aprovado'; }
-                    if (p.status === 'enviado') { 
-                        statusClass = 'bg-enviado'; 
-                        statusText = 'Enviado / Em Trânsito';
-                        // Simulação de Rastreio (se o campo existisse no banco, usariamos ele)
-                        trackingHtml = `
-                            <div class="tracking-box">
-                                <i class="fas fa-truck"></i>
-                                <span>Rastreio: <b>LE${p.id.substring(0,4).toUpperCase()}BR</b> (Correios)</span>
-                                <a href="#" style="color:blue; margin-left:auto; font-size:0.8rem;">Acompanhar</a>
-                            </div>`;
-                    }
-                    if (p.status === 'cancelado') statusClass = 'bg-cancelado';
-
-                    return `
-                    <div class="order-card status-${p.status}">
-                        <div class="order-header">
-                            <span class="order-id">Pedido #${p.id.substring(0,8).toUpperCase()}</span>
-                            <span class="order-date">${formatDate(p.date_created)}</span>
-                        </div>
-                        <div class="order-body">
-                            <div>
-                                <span class="status-badge ${statusClass}">${statusText}</span>
-                            </div>
-                            <div class="order-total">
-                                ${formatMoney(p.total)}
-                            </div>
-                        </div>
-                        ${trackingHtml}
-                    </div>
-                    `;
-                }).join('');
-
-            } catch (e) {
-                console.error(e);
-                listContainer.innerHTML = '<p>Erro ao carregar pedidos.</p>';
-            }
-        }
-
-        // Inicialização
-        window.onload = verificarSessao;
+            if(session) renderDashboard(JSON.parse(session));
+        };
     </script>
 </body>
 </html>
