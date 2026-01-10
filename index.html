@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Leanttro Auto-Peças | Premium Store</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,8 +24,21 @@
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
+        /* TRAVAMENTO GERAL DE SCROLL LATERAL */
+        html, body { 
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden; /* O segredo para não rolar lateralmente */
+            margin: 0; 
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif; 
+            background-color: var(--bg-light); 
+            color: var(--text-dark); 
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; }
+        
         a { text-decoration: none; color: inherit; transition: var(--transition); }
         ul { list-style: none; }
         img { max-width: 100%; display: block; }
@@ -35,6 +48,30 @@
         .btn-primary { background: var(--primary); color: var(--white); }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-accent { background: var(--accent); color: var(--secondary); }
+
+        /* --- WHATSAPP FLUTUANTE --- */
+        .whatsapp-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25d366;
+            color: #FFF;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 2px 2px 3px #999;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .whatsapp-float:hover {
+            background-color: #1ebe57;
+            transform: scale(1.1);
+        }
 
         /* --- HEADER --- */
         header { background: var(--white); border-bottom: 1px solid #eee; padding: 15px 0; }
@@ -140,9 +177,32 @@
 
         /* MOBILE MENU ESPECÍFICO */
         @media (max-width: 768px) {
-            /* Arrumar Header (quebra de linha) */
-            .top-header { flex-wrap: wrap; }
-            .search-main { order: 3; width: 100%; max-width: 100%; margin-top: 10px; }
+            /* 1. Header em Coluna para Centralizar Logo */
+            .top-header { 
+                flex-direction: column; 
+                align-items: center; 
+                text-align: center;
+                gap: 15px;
+            }
+            
+            /* 2. Logo Centralizado */
+            .logo-text { 
+                width: 100%; 
+                margin-bottom: 5px;
+            }
+
+            /* 3. Ícones (Carrinho/Conta) Centralizados abaixo do logo */
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+
+            /* 4. Busca ocupando largura total */
+            .search-main { 
+                width: 100%; 
+                max-width: 100%; 
+            }
             
             /* Mostrar Botão Hamburguer */
             .mobile-menu-btn { display: block; }
@@ -165,16 +225,15 @@
 </head>
 <body>
 
+    <a href="https://wa.me/5511976232235" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
     <header>
         <div class="container">
             <div class="top-header">
                 <a href="index.html" class="logo-text">LEANTTRO <span>AUTO-PEÇAS</span></a>
                 
-                <div class="search-main">
-                    <input type="text" placeholder="O que você está procurando hoje?">
-                    <button onclick="window.location.href='catalogo.html'"><i class="fas fa-search"></i></button>
-                </div>
-
                 <div class="header-actions">
                     <a href="conta.html" class="action-item">
                         <i class="far fa-user-circle"></i>
@@ -185,6 +244,11 @@
                         <i class="fas fa-shopping-basket"></i>
                         <span class="badge" id="cart-count">0</span>
                     </a>
+                </div>
+
+                <div class="search-main">
+                    <input type="text" placeholder="O que você está procurando hoje?">
+                    <button onclick="window.location.href='catalogo.html'"><i class="fas fa-search"></i></button>
                 </div>
             </div>
         </div>
