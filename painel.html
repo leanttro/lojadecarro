@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Conta | Leanttro Auto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #008f39; --secondary: #003366; --bg: #f4f7f6; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg); margin: 0; color: #333; }
+        .container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        
+        /* AUTH BOX */
+        .auth-box { max-width: 400px; margin: 50px auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .btn:hover { background: #006b2b; }
+        .toggle-link { color: var(--secondary); cursor: pointer; font-size: 0.9rem; margin-top: 15px; display: block; text-decoration: underline; }
+
+        /* DASHBOARD */
+        .dashboard { display: none; grid-template-columns: 250px 1fr; gap: 30px; }
+        .sidebar { background: white; padding: 20px; border-radius: 8px; height: fit-content; }
+        .menu-item { display: block; padding: 15px; color: #555; text-decoration: none; border-bottom: 1px solid #eee; cursor: pointer; }
+        .menu-item:hover, .menu-item.active { color: var(--primary); font-weight: bold; }
+        .content-area { background: white; padding: 30px; border-radius: 8px; }
+
+        /* PEDIDOS */
+        .order-card { border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .status { display: inline-block; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .st-pendente { background: #fff3cd; color: #856404; }
+        .st-pago { background: #d4edda; color: #155724; }
+        .st-enviado { background: #cce5ff; color: #004085; }
+
+        @media(max-width: 768px) { .dashboard { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen" class="container">
+        <div class="auth-box">
+            <h2 id="form-title" style="color:var(--secondary)">Acessar Painel</h2>
+            
+            <input type="email" id="email" placeholder="Seu E-mail">
+            <input type="password" id="senha" placeholder="Sua Senha">
+            
+            <div id="nome-field" style="display:none;">
+                <input type="text" id="nome" placeholder="Seu Nome Completo">
+            </div>
+
+            <button class="btn" onclick="handleAuth()" id="btn-action">ENTRAR</button>
+            <span class="toggle-link" onclick="toggleMode()" id="toggle-text">Não tem conta? Cadastre-se</span>
+            <p id="msg" style="color:red; margin-top:10px; font-size:0.9rem;"></p>
+        </div>
+    </div>
+
+    <div id="dash-screen" class="container dashboard">
+        <aside class="sidebar">
+            <div style="text-align:center; margin-bottom:20px;">
+                <i class="fas fa-user-circle" style="font-size:3rem; color:var(--secondary)"></i>
+                <h3 id="user-name">Carregando...</h3>
+            </div>
+            <a class="menu-item active" onclick="showTab('pedidos')"><i class="fas fa-box"></i> Meus Pedidos</a>
+            <a class="menu-item" onclick="showTab('dados')"><i class="fas fa-id-card"></i> Meus Dados</a>
+            <a class="menu-item" onclick="logout()" style="color:red;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </aside>
+
+        <main class="content-area">
+            <div id="tab-pedidos">
+                <h2>Histórico de Pedidos</h2>
+                <div id="lista-pedidos"><p>Carregando...</p></div>
+            </div>
+            
+            <div id="tab-dados" style="display:none;">
+                <h2>Meus Dados Cadastrais</h2>
+                <p><b>Nome:</b> <span id="d-nome"></span></p>
+                <p><b>Email:</b> <span id="d-email"></span></p>
+                <p><b>ID Cliente:</b> <span id="d-id"></span></p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = "https://api2.leanttro.com";
+        let isLoginMode = true;
+
+        // --- CRIPTOGRAFIA (SHA-256) ---
+        async function hashPassword(str) {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('form-title').innerText = isLoginMode ? "Acessar Painel" : "Criar Nova Conta";
+            document.getElementById('btn-action').innerText = isLoginMode ? "ENTRAR" : "CADASTRAR";
+            document.getElementById('toggle-text').innerText = isLoginMode ? "Não tem conta? Cadastre-se" : "Já tem conta? Fazer Login";
+            document.getElementById('nome-field').style.display = isLoginMode ? 'none' : 'block';
+            document.getElementById('msg').innerText = "";
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('email').value.toLowerCase().trim();
+            const senha = document.getElementById('senha').value;
+            const msg = document.getElementById('msg');
+
+            if (!email || !senha) return msg.innerText = "Preencha todos os campos.";
+
+            try {
+                const senhaHash = await hashPassword(senha);
+
+                if (isLoginMode) {
+                    // LOGIN
+                    const res = await fetch(`${API_URL}/items/clientes_loja?filter[email][_eq]=${email}`);
+                    const json = await res.json();
+                    
+                    if (json.data.length > 0) {
+                        const user = json.data[0];
+                        // Compara o hash gerado com o do banco
+                        if (user.senha_hash === senhaHash) {
+                            loginSuccess(user);
+                        } else {
+                            msg.innerText = "Senha incorreta.";
+                        }
+                    } else {
+                        msg.innerText = "E-mail não encontrado.";
+                    }
+                } else {
+                    // CADASTRO
+                    const nome = document.getElementById('nome').value;
+                    if(!nome) return msg.innerText = "Digite seu nome.";
+
+                    const payload = {
+                        status: "published",
+                        nome: nome,
+                        email: email,
+                        senha_hash: senhaHash
+                    };
+
+                    const res = await fetch(`${API_URL}/items/clientes_loja`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        alert("Conta criada! Faça login.");
+                        toggleMode();
+                    } else {
+                        msg.innerText = "Erro ao criar conta (E-mail já existe?)";
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                msg.innerText = "Erro de conexão.";
+            }
+        }
+
+        function loginSuccess(user) {
+            localStorage.setItem('user_session', JSON.stringify(user));
+            renderDashboard(user);
+        }
+
+        function renderDashboard(user) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('dash-screen').style.display = 'grid';
+            
+            document.getElementById('user-name').innerText = user.nome;
+            document.getElementById('d-nome').innerText = user.nome;
+            document.getElementById('d-email').innerText = user.email;
+            document.getElementById('d-id').innerText = user.id;
+
+            loadOrders(user.id);
+        }
+
+        async function loadOrders(userId) {
+            const div = document.getElementById('lista-pedidos');
+            try {
+                const res = await fetch(`${API_URL}/items/pedidos?filter[cliente_id][_eq]=${userId}&sort=-date_created`);
+                const json = await res.json();
+                
+                if(json.data.length === 0) {
+                    div.innerHTML = '<p>Nenhum pedido encontrado.</p>';
+                    return;
+                }
+
+                div.innerHTML = json.data.map(p => `
+                    <div class="order-card">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <strong>Pedido #${p.id.substring(0,8).toUpperCase()}</strong>
+                            <span class="status st-${p.status}">${p.status}</span>
+                        </div>
+                        <div>Total: R$ ${parseFloat(p.total).toFixed(2).replace('.',',')}</div>
+                        <div style="margin-top:10px; font-size:0.9rem; color:#666;">
+                            ${p.rastreio ? `<i class="fas fa-truck"></i> Rastreio: ${p.rastreio}` : 'Aguardando envio'}
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch(e) { console.error(e); }
+        }
+
+        function showTab(tab) {
+            document.getElementById('tab-pedidos').style.display = tab === 'pedidos' ? 'block' : 'none';
+            document.getElementById('tab-dados').style.display = tab === 'dados' ? 'block' : 'none';
+            
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('user_session');
+            location.reload();
+        }
+
+        // Verifica se já está logado ao abrir
+        window.onload = () => {
+            const session = localStorage.getItem('user_session');
+            if(session) renderDashboard(JSON.parse(session));
+        };
+    </script>
+</body>
+</html>

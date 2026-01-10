@@ -2,40 +2,60 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Pedido | Leanttro Auto</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Roboto', sans-serif; background: #f4f7f6; padding: 20px; }
+        body { font-family: 'Roboto', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        h2 { color: #003366; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: #003366; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
         
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
         
-        .summary { background: #eef; padding: 15px; border-radius: 4px; margin: 20px 0; }
-        .btn-pay { background: #008f39; color: white; border: none; padding: 15px; width: 100%; font-size: 1.2rem; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .summary { background: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0; border: 1px solid #e9ecef; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
+        .total-row { font-size: 1.3rem; font-weight: 900; color: #008f39; border-top: 1px solid #ddd; padding-top: 10px; margin-top: 10px; }
+
+        .btn-pay { background: #008f39; color: white; border: none; padding: 15px; width: 100%; font-size: 1.1rem; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; }
         .btn-pay:hover { background: #006b2b; }
         .btn-pay:disabled { background: #ccc; cursor: not-allowed; }
+
+        .user-alert { background: #e3f2fd; color: #0d47a1; padding: 15px; border-radius: 4px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div id="login-alert" class="user-alert" style="display:none;">
+            <i class="fas fa-user-check"></i> 
+            <span>Você está logado como <b id="user-name-display"></b>.</span>
+        </div>
+
         <h2>Finalizar Pedido</h2>
         
         <div class="form-group">
-            <label>Seu Nome Completo</label>
+            <label>Nome Completo</label>
             <input type="text" id="nome" placeholder="Ex: Leandro Andrade">
         </div>
+        
         <div class="form-group">
-            <label>Seu Email</label>
-            <input type="email" id="email" placeholder="Para enviar o comprovante">
+            <label>E-mail (para acompanhamento)</label>
+            <input type="email" id="email" placeholder="seu@email.com">
         </div>
+
+        <div class="form-group" id="senha-group">
+            <label>Crie uma senha <small style="font-weight:normal; color:#888;">(Para acompanhar o pedido depois)</small></label>
+            <input type="password" id="senha" placeholder="Mínimo 6 caracteres">
+        </div>
+
         <div class="form-group">
-            <label>Endereço de Entrega</label>
-            <input type="text" id="endereco" placeholder="Rua, Número, Bairro, Cidade">
+            <label>Endereço de Entrega Completo</label>
+            <input type="text" id="endereco" placeholder="Rua, Número, Bairro, Cidade, CEP">
         </div>
+        
         <div class="form-group">
             <label>Forma de Pagamento</label>
             <select id="pagamento">
@@ -46,40 +66,88 @@
         </div>
 
         <div class="summary">
-            <h3>Resumo</h3>
-            <p>Itens: <span id="item-count">0</span></p>
-            <p style="font-size:1.3rem; font-weight:bold;">Total: <span id="total-val">R$ 0,00</span></p>
+            <h3>Resumo da Compra</h3>
+            <div class="row">
+                <span>Itens no carrinho:</span>
+                <span id="item-count">0</span>
+            </div>
+            <div class="row total-row">
+                <span>Total a Pagar:</span>
+                <span id="total-val">R$ 0,00</span>
+            </div>
         </div>
 
-        <button class="btn-pay" onclick="enviarPedido()" id="btn-submit">CONFIRMAR PEDIDO</button>
+        <button class="btn-pay" onclick="processarCheckout()" id="btn-submit">CONFIRMAR PEDIDO</button>
+        <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: #777;">
+            <a href="index.html">Continuar comprando</a>
+        </p>
     </div>
 
     <script>
         const API_URL = "https://api2.leanttro.com";
         let cart = [];
+        let currentUser = null;
 
+        // --- 1. CRIPTOGRAFIA ---
+        async function hashPassword(str) {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // --- 2. INICIALIZAÇÃO ---
         function init() {
+            // Verifica Carrinho
             cart = JSON.parse(localStorage.getItem('cart') || '[]');
             if (cart.length === 0) {
-                alert("Carrinho vazio!");
+                alert("Seu carrinho está vazio!");
                 window.location.href = "index.html";
                 return;
             }
             
-            // Calcula total
+            // Renderiza Totais
             const total = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
             document.getElementById('item-count').innerText = cart.length;
             document.getElementById('total-val').innerText = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            // Verifica Login (Session)
+            const session = localStorage.getItem('user_session');
+            if (session) {
+                currentUser = JSON.parse(session);
+                
+                // Preenche formulário e trava campos
+                document.getElementById('nome').value = currentUser.nome;
+                document.getElementById('email').value = currentUser.email;
+                
+                // Se já tiver endereço salvo no JSON do usuário, poderia preencher aqui
+                // document.getElementById('endereco').value = currentUser.endereco_json?.rua || '';
+
+                // Esconde campo de senha
+                document.getElementById('senha-group').style.display = 'none';
+                
+                // Mostra aviso
+                document.getElementById('login-alert').style.display = 'flex';
+                document.getElementById('user-name-display').innerText = currentUser.nome;
+            }
         }
 
-        async function enviarPedido() {
+        // --- 3. PROCESSAMENTO ---
+        async function processarCheckout() {
             const btn = document.getElementById('btn-submit');
             const nome = document.getElementById('nome').value;
             const email = document.getElementById('email').value;
             const endereco = document.getElementById('endereco').value;
+            const senha = document.getElementById('senha').value;
+            const metodoPagamento = document.getElementById('pagamento').value;
 
+            // Validação Básica
             if (!nome || !email || !endereco) {
-                alert("Preencha todos os campos!");
+                alert("Por favor, preencha todos os campos obrigatórios.");
+                return;
+            }
+
+            // Se não estiver logado, EXIGE senha para criar conta
+            if (!currentUser && !senha) {
+                alert("Defina uma senha para acompanhar seu pedido no painel.");
                 return;
             }
 
@@ -87,41 +155,92 @@
             btn.innerText = "PROCESSANDO...";
 
             try {
-                // 1. Cria o cliente no banco (ou atualiza) - Simplificado para MVP
-                // Aqui vamos apenas salvar o pedido direto, assumindo cliente 'Visitante'
-                // O ideal seria criar o user na tabela `clientes_loja` primeiro.
+                let clienteId = null;
 
-                // Prepara os dados para o Directus
+                // PASSO A: Identificar ou Criar Cliente
+                if (currentUser) {
+                    clienteId = currentUser.id;
+                } else {
+                    // Tenta Criar Novo Cliente
+                    try {
+                        const senhaHash = await hashPassword(senha);
+                        
+                        const novoCliente = {
+                            status: "published",
+                            nome: nome,
+                            email: email,
+                            senha_hash: senhaHash,
+                            endereco_json: { rua: endereco } // Salva endereço no perfil tb
+                        };
+
+                        const resCliente = await fetch(`${API_URL}/items/clientes_loja`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(novoCliente)
+                        });
+
+                        const jsonCliente = await resCliente.json();
+
+                        if (!resCliente.ok) {
+                            // Erro comum: Email já existe
+                            if (jsonCliente.errors && jsonCliente.errors[0].code === 'RECORD_NOT_UNIQUE') {
+                                alert("Este e-mail já está cadastrado!\nPor favor, faça login no painel antes de comprar ou use outro e-mail.");
+                                btn.disabled = false;
+                                btn.innerText = "CONFIRMAR PEDIDO";
+                                return;
+                            }
+                            throw new Error("Erro ao criar cadastro.");
+                        }
+
+                        // Sucesso na criação
+                        clienteId = jsonCliente.data.id;
+                        
+                        // Salva sessão para o futuro
+                        localStorage.setItem('user_session', JSON.stringify(jsonCliente.data));
+
+                    } catch (errUser) {
+                        console.error(errUser);
+                        alert("Erro ao cadastrar usuário. Verifique os dados.");
+                        btn.disabled = false;
+                        btn.innerText = "CONFIRMAR PEDIDO";
+                        return;
+                    }
+                }
+
+                // PASSO B: Criar o Pedido Vinculado
                 const total = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
                 
                 const pedidoPayload = {
                     status: "pendente",
+                    cliente_id: clienteId, // VINCULA AO CLIENTE
                     total: total,
-                    metodo_pagamento: document.getElementById('pagamento').value,
-                    // Salvamos o snapshot como JSON string ou objeto
-                    itens_snapshot: cart, 
-                    // Como não temos login ainda, salvamos o endereço no snapshot ou criaríamos o cliente
-                    endereco_entrega_snapshot: { rua: endereco, destinatario: nome, email: email }
+                    metodo_pagamento: metodoPagamento,
+                    itens_snapshot: cart,
+                    endereco_entrega_snapshot: { 
+                        destinatario: nome, 
+                        rua: endereco, 
+                        email: email 
+                    }
                 };
 
-                const res = await fetch(`${API_URL}/items/pedidos`, {
+                const resPedido = await fetch(`${API_URL}/items/pedidos`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(pedidoPayload)
                 });
 
-                if (res.ok) {
-                    // Limpa carrinho e avisa
+                if (resPedido.ok) {
+                    // Sucesso Total
                     localStorage.removeItem('cart');
-                    alert("✅ PEDIDO REALIZADO COM SUCESSO!\nEntraremos em contato pelo email.");
-                    window.location.href = "index.html";
+                    alert(`✅ PEDIDO RECEBIDO!\n\nVocê pode acompanhar o status acessando 'Minha Conta'.`);
+                    window.location.href = "painel.html"; // Redireciona para o novo painel
                 } else {
-                    throw new Error("Erro ao salvar pedido");
+                    throw new Error("Erro ao salvar pedido.");
                 }
 
             } catch (e) {
                 console.error(e);
-                alert("Erro ao processar. Tente novamente.");
+                alert("Ocorreu um erro ao processar o pedido. Tente novamente.");
                 btn.disabled = false;
                 btn.innerText = "CONFIRMAR PEDIDO";
             }
