@@ -555,7 +555,6 @@
             'baterias': 'fas fa-car-battery',
             'suspensao': 'fas fa-tools',
             'iluminacao': 'fas fa-lightbulb',
-            'arrefecimento': 'fas fa-fan',
             'pneus': 'fas fa-circle-notch',
             'acessorios': 'fas fa-shopping-bag'
         };
@@ -600,9 +599,11 @@
                     return;
                 }
 
-                globalCategories = json.data;
+                // FILTRO PARA REMOVER ARREFECIMENTO
+                const filteredData = json.data.filter(cat => cat.slug !== 'arrefecimento');
+                globalCategories = filteredData;
 
-                container.innerHTML = json.data.map(cat => {
+                container.innerHTML = filteredData.map(cat => {
                     const iconClass = iconMap[cat.slug] || 'fas fa-box';
                     return `
                         <div class="cat-item" onclick="filtrarCategoria('${cat.id}', '${cat.nome}')">
