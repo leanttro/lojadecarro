@@ -221,9 +221,9 @@
                 const pedidoPayload = {
                     status: "pendente",
                     cliente_id: clienteId,
-                    total: finalTotal, // ENVIA O TOTAL COM FRETE
+                    total: finalTotal,
                     metodo_pagamento: metodoPagamento,
-                    rastreio: shippingInfo.tipo || 'Padrão', // Salva o tipo de frete no campo rastreio por enquanto ou cria um campo 'tipo_frete'
+                    rastreio: shippingInfo.tipo || 'Padrão',
                     itens_snapshot: cart,
                     endereco_entrega_snapshot: { 
                         destinatario: nome, 
@@ -243,12 +243,22 @@
                     localStorage.removeItem('cart');
                     localStorage.removeItem('shipping_info');
                     
-                    // ALERTA BONITO
+                    // ALERTA MODIFICADO PARA EXPLICAR O PAGAMENTO DEMONSTRATIVO
                     Swal.fire({
-                        title: 'Pedido Confirmado! 🎉',
-                        text: `Valor Total: R$ ${finalTotal.toFixed(2)}\nVocê pode acompanhar o status em "Minha Conta".`,
+                        title: 'Simulação de Pedido! 🚀',
+                        html: `
+                            <p style="text-align:left;">Em uma loja real, você seria redirecionado agora para o <b>Mercado Pago</b> (ou outro gateway) para realizar o pagamento.</p>
+                            <br>
+                            <p style="text-align:left; font-size: 0.95em; color: #555;">
+                                Eu configuro essa integração completa e segura para meus clientes, exatamente como fiz nos projetos 
+                                <a href="https://www.leanttro.com" target="_blank">leanttro.com</a> e 
+                                <a href="https://www.divideopix.com.br" target="_blank">divideopix.com.br</a>.
+                            </p>
+                            <br>
+                            <p style="text-align:left;">Como esta é uma <b>Loja Modelo</b>, aprovei seu pedido automaticamente para que você veja o painel do cliente!</p>
+                        `,
                         icon: 'success',
-                        confirmButtonText: 'Ir para Painel',
+                        confirmButtonText: 'Entendi, ver meu Painel',
                         confirmButtonColor: '#008f39',
                         allowOutsideClick: false
                     }).then(() => {
