@@ -39,7 +39,7 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        a { text-decoration: none; color: inherit; transition: var(--transition); }
+        a { text-decoration: none; color: inherit; transition: var(--transition); cursor: pointer; }
         ul { list-style: none; }
         img { max-width: 100%; display: block; }
         
@@ -77,8 +77,8 @@
         header { background: var(--white); border-bottom: 1px solid #eee; padding: 15px 0; }
         .top-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
         
-        /* LOGO AREA */
-        .logo-area { display: flex; flex-direction: column; }
+        /* LOGO AREA - Centralizada */
+        .logo-area { display: flex; flex-direction: column; align-items: center; }
         .logo-text { font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: -1px; line-height: 1; }
         .logo-text span { color: var(--secondary); }
         .demo-label { font-size: 0.65rem; color: #999; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-top: 3px; margin-left: 2px; }
@@ -181,7 +181,8 @@
         /* MOBILE MENU ESPECÍFICO */
         @media (max-width: 768px) {
             .top-header { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
-            .logo-area { width: 100%; align-items: center; margin-bottom: 5px; }
+            /* logo-area já está centralizada via flex column + align-items center */
+            .logo-area { width: 100%; margin-bottom: 5px; }
             .header-actions { width: 100%; justify-content: center; margin-bottom: 10px; }
             .search-main { width: 100%; max-width: 100%; }
             .mobile-menu-btn { display: block; }
@@ -243,12 +244,11 @@
 
             <nav class="nav-menu">
                 <ul id="main-menu">
-                    <li><a href="index.html">Início</a></li>
-                    <li><a href="catalogo.html">Peças</a></li>
-                    <li><a href="catalogo.html">Acessórios</a></li>
-                    <li><a href="catalogo.html">Lubrificantes</a></li>
-                    <li><a href="catalogo.html">Elétrica</a></li>
-                    <li><a href="catalogo.html">Pneus</a></li>
+                    <li><a onclick="window.location.reload()">Início</a></li>
+                    <li><a onclick="carregarProdutos()">Peças</a></li> <li><a onclick="filtrarPorSlug('acessorios')">Acessórios</a></li>
+                    <li><a onclick="filtrarPorSlug('oleos')">Óleos e Fluidos</a></li>
+                    <li><a onclick="filtrarPorSlug('iluminacao')">Elétrica</a></li>
+                    <li><a onclick="filtrarPorSlug('pneus')">Pneus</a></li>
                     <li><a href="#footer">Contato</a></li>
                 </ul>
             </nav>
@@ -382,6 +382,7 @@
 
     <script>
         const API_URL = "https://api2.leanttro.com";
+        let globalCategories = []; // Para armazenar categorias e filtrar pelo slug
         
         // --- MAPEAMENTO DE ÍCONES (NOME DO BANCO -> CLASSE CSS) ---
         const iconMap = {
@@ -437,9 +438,11 @@
                     return;
                 }
 
+                // Salva na global para uso no menu
+                globalCategories = json.data;
+
                 container.innerHTML = json.data.map(cat => {
                     const iconClass = iconMap[cat.slug] || 'fas fa-box';
-                    // AGORA CHAMA A FUNÇÃO FILTRAR E NÃO MUDA DE PÁGINA
                     return `
                         <div class="cat-item" onclick="filtrarCategoria('${cat.id}', '${cat.nome}')">
                             <div class="cat-circle"><i class="${iconClass}"></i></div>
@@ -451,20 +454,33 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- 2. NOVA FUNÇÃO DE FILTRO NA PRÓPRIA PÁGINA ---
+        // --- 2. FILTROS ---
+        
+        // Filtro por ID (vindo das bolinhas)
         function filtrarCategoria(id, nome) {
-            // Rola até a sessão de produtos
             document.querySelector('.products-section').scrollIntoView({ behavior: 'smooth' });
             
-            // Atualiza o Título da Seção
             const title = document.querySelector('.section-header h2');
             title.innerText = `Categoria: ${nome}`;
             
-            // Recarrega produtos com o filtro
+            // Se mobile, fecha menu
+            document.getElementById('main-menu').classList.remove('show');
+
             carregarProdutos(null, id);
         }
 
-        // --- 3. PRODUTOS (Agora aceita Categoria ID) ---
+        // NOVO: Filtro por Slug (vindo do menu superior)
+        function filtrarPorSlug(slug) {
+            const cat = globalCategories.find(c => c.slug === slug);
+            if (cat) {
+                filtrarCategoria(cat.id, cat.nome);
+            } else {
+                console.warn("Categoria não encontrada para slug:", slug);
+                // Opcional: Avisar usuário
+            }
+        }
+
+        // --- 3. PRODUTOS ---
         async function carregarProdutos(filtroVersaoId = null, categoriaId = null) {
             const container = document.getElementById('product-container');
             container.innerHTML = '<p style="padding:20px; grid-column:1/-1; text-align:center;">Carregando estoque...</p>';
@@ -478,6 +494,10 @@
                 } else if (categoriaId) {
                     // Se tiver categoria, filtra por ela
                     url += `&filter[categoria_id][_eq]=${categoriaId}`;
+                } else {
+                    // Se não tiver filtro, reseta título
+                    const title = document.querySelector('.section-header h2');
+                    if(title) title.innerText = "Destaques da Semana";
                 }
 
                 const response = await fetch(url);
@@ -489,7 +509,7 @@
                         <div style="grid-column: 1/-1; text-align:center; padding: 40px; background: #fff; border-radius: 8px;">
                             <i class="fas fa-search" style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i>
                             <h3>Nenhuma peça encontrada.</h3>
-                            <button class="btn btn-primary" style="margin-top:15px" onclick="window.location.href='catalogo.html'">Ver Tudo</button>
+                            <button class="btn btn-primary" style="margin-top:15px" onclick="carregarProdutos()">Ver Tudo</button>
                         </div>`;
                     return;
                 }
@@ -631,7 +651,7 @@
         window.onload = () => {
             updateCartCount();
             checkLogin();
-            carregarCategorias(); // Carrega as bolinhas do banco
+            carregarCategorias(); // Carrega as bolinhas do banco e popula globalCategories
             carregarMarcas();
             carregarProdutos(); // Carrega Destaques (sem filtro)
             carregarBlog();
