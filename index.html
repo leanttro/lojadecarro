@@ -49,80 +49,6 @@
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-accent { background: var(--accent); color: var(--secondary); }
 
-        /* --- ANIMAÇÃO DE ENTRADA "RACE" --- */
-        .intro-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #111; /* Fundo escuro premium */
-            z-index: 99999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            transition: opacity 0.5s ease-out, visibility 0.5s;
-        }
-        
-        .road-container {
-            position: relative;
-            width: 100%;
-            height: 100px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .race-car {
-            position: absolute;
-            font-size: 4rem;
-            color: var(--primary);
-            left: -150px;
-            /* Animação do carro passando */
-            animation: racePass 1.2s cubic-bezier(0.5, 0, 0.1, 1) forwards;
-            z-index: 2;
-            text-shadow: 0 0 10px rgba(0, 143, 57, 0.8);
-        }
-        
-        /* Linhas de velocidade */
-        .speed-line {
-            position: absolute;
-            height: 2px;
-            background: rgba(255,255,255,0.1);
-            width: 100%;
-            top: 50%;
-        }
-        
-        .loading-text {
-            color: white;
-            font-size: 1.2rem;
-            margin-top: 20px;
-            font-weight: 300;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            opacity: 0;
-            animation: fadeInText 0.5s ease 0.2s forwards;
-        }
-
-        .intro-hidden { 
-            opacity: 0; 
-            visibility: hidden; 
-            pointer-events: none;
-        }
-        
-        @keyframes racePass {
-            0% { left: -150px; transform: skewX(10deg); }
-            40% { left: 45%; transform: skewX(-10deg); }
-            55% { left: 55%; transform: skewX(-5deg); }
-            100% { left: 120%; transform: skewX(-20deg); }
-        }
-        
-        @keyframes fadeInText {
-            to { opacity: 1; }
-        }
-
         /* --- WHATSAPP FLUTUANTE --- */
         .whatsapp-float {
             position: fixed;
@@ -194,7 +120,7 @@
         }
         .banner-slide img {
             width: 100%;
-            /* ALTURA AUMENTADA PARA 500px */
+            /* ALTURA FIXA 500px NO DESKTOP */
             height: 500px; 
             object-fit: cover; /* Garante que a imagem preencha sem esticar */
             display: block;
@@ -358,14 +284,6 @@
     </style>
 </head>
 <body>
-
-    <div id="intro-loader" class="intro-overlay">
-        <div class="road-container">
-            <div class="speed-line"></div>
-            <i class="fas fa-car-side race-car"></i>
-        </div>
-        <h2 class="loading-text">LEANTTRO AUTO</h2>
-    </div>
 
     <a href="https://wa.me/5511976232235" class="whatsapp-float" target="_blank">
         <i class="fab fa-whatsapp"></i>
@@ -881,11 +799,6 @@
 
         // --- INICIALIZAÇÃO ---
         window.onload = () => {
-            // Animação de Entrada
-            setTimeout(() => {
-                document.getElementById('intro-loader').classList.add('intro-hidden');
-            }, 1200); // 1.2 segundos para garantir que a animação ocorra
-
             startBannerInterval(); // Inicia Banners
 
             updateCartCount();
