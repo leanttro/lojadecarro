@@ -124,12 +124,39 @@
         .cat-item:hover .cat-circle { background: var(--white); border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-5px); }
         .cat-item:hover span { color: var(--primary); }
 
-        /* --- PRODUCTS --- */
+        /* --- PRODUCTS & VIEW MODE --- */
         .products-section { padding: 50px 0; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .section-header h2 { font-size: 1.5rem; color: var(--secondary); }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .section-header h2 { font-size: 1.5rem; color: var(--secondary); margin: 0; }
         
+        .header-controls { display: flex; gap: 15px; align-items: center; }
+        .toggle-view-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #555; font-size: 0.85rem; font-weight: bold; background: #f0f0f0; padding: 8px 15px; border-radius: 20px; transition: 0.3s; }
+        .toggle-view-btn:hover { background: #e0e0e0; color: var(--primary); }
+        .toggle-view-btn i { font-size: 1rem; }
+
+        /* GRID MODE (DEFAULT) */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; transition: all 0.3s; }
+        
+        /* CAROUSEL MODE (TOGGLED) */
+        .product-grid.carousel-view {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding-bottom: 20px; /* Espaço pro scrollbar */
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+        }
+        .product-grid.carousel-view .product-card {
+            min-width: 260px; /* Largura fixa no modo carrossel */
+            max-width: 260px;
+            flex-shrink: 0;
+            scroll-snap-align: start;
+        }
+        /* Custom Scrollbar for Carousel */
+        .product-grid.carousel-view::-webkit-scrollbar { height: 8px; }
+        .product-grid.carousel-view::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        .product-grid.carousel-view::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
         .product-card { background: white; padding: 20px; border-radius: var(--radius); border: 1px solid #eee; transition: var(--transition); display: flex; flex-direction: column; }
         .product-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); }
         .product-img { height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; cursor: pointer; }
@@ -194,6 +221,9 @@
             .cat-item { width: 90px; }
             .cat-circle { width: 70px; height: 70px; }
             .cat-circle i { font-size: 1.5rem; }
+            
+            /* Ajuste header controle mobile */
+            .section-header { justify-content: center; }
         }
 
         @keyframes slideDown {
@@ -303,8 +333,17 @@
         <div class="container">
             <div class="section-header">
                 <h2>Destaques da Semana</h2>
-                <a href="catalogo.html" style="color: var(--primary); font-weight: bold;">Ver Todos →</a>
+                
+                <div class="header-controls">
+                    <div class="toggle-view-btn" onclick="toggleViewMode()">
+                        <i class="fas fa-exchange-alt" id="view-icon"></i>
+                        <span id="view-text">Ver em Carrossel</span>
+                    </div>
+                    
+                    <a href="catalogo.html" style="color: var(--primary); font-weight: bold;">Ver Todos →</a>
+                </div>
             </div>
+            
             <div class="product-grid" id="product-container">
                 <p style="grid-column: 1/-1; text-align:center;">Carregando produtos...</p>
             </div>
@@ -382,9 +421,29 @@
 
     <script>
         const API_URL = "https://api2.leanttro.com";
-        let globalCategories = []; // Para armazenar categorias e filtrar pelo slug
+        let globalCategories = []; 
+        let isCarouselMode = false; // Estado inicial: Grade
         
-        // --- MAPEAMENTO DE ÍCONES (NOME DO BANCO -> CLASSE CSS) ---
+        // --- TOGGLE VIEW FUNCTION ---
+        function toggleViewMode() {
+            const container = document.getElementById('product-container');
+            const icon = document.getElementById('view-icon');
+            const text = document.getElementById('view-text');
+            
+            isCarouselMode = !isCarouselMode;
+
+            if (isCarouselMode) {
+                container.classList.add('carousel-view');
+                icon.className = "fas fa-th-large";
+                text.innerText = "Ver em Grade";
+            } else {
+                container.classList.remove('carousel-view');
+                icon.className = "fas fa-exchange-alt";
+                text.innerText = "Ver em Carrossel";
+            }
+        }
+
+        // --- MAPEAMENTO DE ÍCONES ---
         const iconMap = {
             'freios': 'fas fa-compact-disc',
             'motor': 'fas fa-cogs',
@@ -429,7 +488,6 @@
         async function carregarCategorias() {
             const container = document.getElementById('cat-grid');
             try {
-                // Busca categorias que têm status 'published'
                 const res = await fetch(`${API_URL}/items/categorias?status=published`);
                 const json = await res.json();
                 
@@ -438,7 +496,6 @@
                     return;
                 }
 
-                // Salva na global para uso no menu
                 globalCategories = json.data;
 
                 container.innerHTML = json.data.map(cat => {
@@ -455,28 +512,21 @@
         }
 
         // --- 2. FILTROS ---
-        
-        // Filtro por ID (vindo das bolinhas)
         function filtrarCategoria(id, nome) {
             document.querySelector('.products-section').scrollIntoView({ behavior: 'smooth' });
             
             const title = document.querySelector('.section-header h2');
             title.innerText = `Categoria: ${nome}`;
             
-            // Se mobile, fecha menu
             document.getElementById('main-menu').classList.remove('show');
 
             carregarProdutos(null, id);
         }
 
-        // NOVO: Filtro por Slug (vindo do menu superior)
         function filtrarPorSlug(slug) {
             const cat = globalCategories.find(c => c.slug === slug);
             if (cat) {
                 filtrarCategoria(cat.id, cat.nome);
-            } else {
-                console.warn("Categoria não encontrada para slug:", slug);
-                // Opcional: Avisar usuário
             }
         }
 
@@ -488,14 +538,11 @@
             try {
                 let url = `${API_URL}/items/produtos?fields=*,imagem_destaque`;
                 
-                // Lógica de Filtro
                 if (filtroVersaoId) {
                     url += `&filter[veiculos_compativeis][veiculos_versoes_id][_eq]=${filtroVersaoId}`;
                 } else if (categoriaId) {
-                    // Se tiver categoria, filtra por ela
                     url += `&filter[categoria_id][_eq]=${categoriaId}`;
                 } else {
-                    // Se não tiver filtro, reseta título
                     const title = document.querySelector('.section-header h2');
                     if(title) title.innerText = "Destaques da Semana";
                 }
@@ -651,9 +698,9 @@
         window.onload = () => {
             updateCartCount();
             checkLogin();
-            carregarCategorias(); // Carrega as bolinhas do banco e popula globalCategories
+            carregarCategorias(); 
             carregarMarcas();
-            carregarProdutos(); // Carrega Destaques (sem filtro)
+            carregarProdutos();
             carregarBlog();
         };
     </script>
